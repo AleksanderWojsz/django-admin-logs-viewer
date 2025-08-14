@@ -1,0 +1,2 @@
+recursive-include django_admin_logs_viewer/static *
+recursive-include django_admin_logs_viewer/templates *

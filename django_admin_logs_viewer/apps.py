@@ -1,0 +1,5 @@
+from django.apps import AppConfig
+
+class DjangoAdminLogsViewerConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "django_admin_logs_viewer"
