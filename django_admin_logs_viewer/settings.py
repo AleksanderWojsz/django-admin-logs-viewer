@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_admin_logs_viewer.apps.DjangoAdminLogsViewerConfig',
 ]
 
 MIDDLEWARE = [
@@ -120,3 +121,61 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+###################### LOGGING ######################
+
+LOGS_SAVE_PATH = Path(BASE_DIR) / 'logs'
+(LOGS_SAVE_PATH / 'commands').mkdir(parents=True, exist_ok=True)
+(LOGS_SAVE_PATH / 'other').mkdir(parents=True, exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": '"level": "{levelname}", "datetime": "{asctime}", "source": "{name}", "file": "{filename}:{lineno}", "message": "{message}"',
+            "style": "{",
+        },
+        "simple": {
+            "format": "[{levelname}] {filename}; {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "file_commands": {
+            "level": "INFO",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": LOGS_SAVE_PATH / 'commands' / 'logfile_commands.log',
+            "when": "midnight",
+            "interval": 1,
+            "delay": True,
+            "formatter": "verbose",
+        },
+        "file_other": {
+            "level": "INFO",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": LOGS_SAVE_PATH / 'other' / 'logfile_other.log',
+            "when": "midnight",
+            "interval": 1,
+            "delay": True,
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django_admin_logs_viewer.management.commands": {
+            "level": "DEBUG",
+            "handlers": ["file_commands", "console"],
+            "propagate": False,
+        },
+        "": {
+            "level": "DEBUG",
+            "handlers": ["file_other", "console"],
+            "propagate": False,
+        },
+    }
+}
