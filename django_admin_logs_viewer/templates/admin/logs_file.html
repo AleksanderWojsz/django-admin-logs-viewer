@@ -23,15 +23,48 @@
         </thead>
         <tbody>
             {% for row in rows %}
-                <tr>
-                    {% for value in row %}
+            <tr>
+                {% for value in row %}
+                    {% if forloop.counter == column_names|length and value %}
+                        <td>
+                            <button type="button" class="button" onclick="toggleTraceback(this)">Show Traceback</button>
+                            <pre class="traceback-content" style="max-height: 0;">{{ value }}</pre> <!-- `max-height` is set inline, so it can be read in the script tag -->
+                        </td>
+                    {% else %}
                         <td>{{ value }}</td>
-                    {% endfor %}
-                </tr>
+                    {% endif %}
+                {% endfor %}
+            </tr>
             {% endfor %}
         </tbody>
     </table>
 {% else %}
     <pre>{{ content }}</pre>
 {% endif %}
+
+<style>
+.button {
+    padding: 6px 6px;
+    font-size: 14px;
+}
+
+.traceback-content {
+    overflow: hidden;
+    overflow-x: auto;
+    transition: max-height 0.2s ease;
+}
+
+</style>
+
+<script>
+function toggleTraceback(button) {
+    const pre_tag = button.nextElementSibling;
+    if (pre_tag.style.maxHeight !== "0px") {
+        pre_tag.style.maxHeight = "0";
+    } else {
+        pre_tag.style.maxHeight = pre_tag.scrollHeight + "px";
+    }
+}
+</script>
+
 {% endblock %}

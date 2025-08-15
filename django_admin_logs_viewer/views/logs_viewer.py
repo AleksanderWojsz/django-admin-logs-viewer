@@ -98,33 +98,49 @@ def _auto_drill_down(path):
 
 def _parse_logs(content, parser_config):
     parser_type = parser_config["type"]
-    column_names = parser_config.get("column_names", [])
+    column_names = list(parser_config.get("column_names", [])) # List, so copy it made
+    separators = getattr(settings, "LOGS_SEPARATORS", [])
 
-    if parser_type == "separator":
-        rows = []
-        for line in content.splitlines():
-            values = line.split(parser_config["separator"])
-            rows.append(values)
-        return column_names, rows
+    records = _split_log_records(content, separators)
+    rows = []
 
-    elif parser_type == "json":
-        rows = []
+    for record in records:
+        main_line, *traceback_text = record.split("\n", maxsplit=1)
 
-        for line in content.splitlines():
-            line = line.replace("\\", "\\\\") # So \ works
-            obj = json.loads(line)
-            rows.append(obj.values())
-
+        if parser_type == "separator":
+            values = main_line.split(parser_config["separator"])
+        elif parser_type == "json":
+            main_line = main_line.replace("\\", "\\\\") # So `\` is parsed correctly
+            obj = json.loads(main_line)
             if not column_names:
-                column_names = obj.keys()
-        return column_names, rows
+                column_names = list(obj.keys())
+            values = list(obj.values())
+        else: # parser_type == "regex":
+            match = re.fullmatch(parser_config["pattern"], main_line)
+            values = list(match.groups())
 
-    else: # parser_type == "regex":
-        regex = re.compile(parser_config["pattern"])
-        rows = []
+        if traceback_text:
+            values.append(traceback_text[0])
 
-        for line in content.splitlines():
-            match = regex.fullmatch(line)
-            if match:
-                rows.append(match.groups())
-        return column_names, rows
+        rows.append(values)
+
+    column_names += ["Traceback"]
+
+    return column_names, rows
+
+def _split_log_records(content, separators):
+    separator_pattern = re.compile("|".join(separators), re.MULTILINE)
+
+    records = []
+    current_record = [] # Can be multiline
+    for line in content.splitlines():
+        if separator_pattern.match(line) and current_record:
+            records.append("\n".join(current_record))
+            current_record = [line]
+        else:
+            current_record.append(line)
+
+    if current_record:
+        records.append("\n".join(current_record))
+
+    return records

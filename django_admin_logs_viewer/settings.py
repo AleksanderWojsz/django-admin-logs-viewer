@@ -187,6 +187,9 @@ LOGS_DIRS = [
     os.path.join(BASE_DIR, "logs"),
 ]
 
+LOGS_SEPARATORS = [
+    r'^\{',
+]
 
 # LOGS_PARSER = {
 #     "type": "separator",
@@ -194,13 +197,13 @@ LOGS_DIRS = [
 #     "column_names": ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
 # }
 
+LOGS_PARSER = {
+    "type": "json",
+    "column_names": ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
+}
+
 # LOGS_PARSER = {
 #     "type": "regex",
 #     "pattern": r'\{\s*"level"\s*:\s*"([^"]+)"\s*,\s*"datetime"\s*:\s*"([^"]+)"\s*,\s*"source"\s*:\s*"([^"]+)"\s*,\s*"file"\s*:\s*"([^"]+)"\s*,\s*"message"\s*:\s*"([^"]+)"\s*\}',
 #     "column_names": ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
 # }
-
-LOGS_PARSER = {
-    "type": "json",
-    "column_names": ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
-}
