@@ -23,22 +23,24 @@
         </thead>
         <tbody>
             {% for row in rows %}
-            <tr>
-                {% for value in row %}
-                    {% if forloop.counter == column_names|length and value %}
-                        <td><button type="button" class="button" onclick="toggleTraceback(this)">Show Traceback</button></td>
-                    {% else %}
-                        <td>{{ value }}</td>
-                    {% endif %}
-                {% endfor %}
-            </tr>
-            {% if row|last %}
-            <tr class="traceback-row" style="display:none;">
-                <td colspan="{{ column_names|length }}">
-                    <pre class="traceback-content" style="max-height: 0;">{{ row|last }}</pre> <!-- `max-height` is set inline, so it can be read in the script tag -->
-                </td>
-            </tr>
-            {% endif %}
+                <tr>
+                    {% for value in row %}
+                        {% if forloop.counter == column_names|length and value %}
+                            <td><button type="button" class="button" onclick="toggleTraceback(this)">Show Traceback</button></td>
+                        {% else %}
+                            <td>{{ value }}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% if row|length == column_names|length and row|last %}
+                <tr class="traceback-row">
+                    <td colspan="{{ column_names|length }}" style="padding: 5px; border: none;">
+                        <div class="traceback-wrapper" style="max-height: 0; overflow: hidden; transition: max-height 0.2s;"> <!-- `max-height` is set inline, so it can be read in the script tag -->
+                            <pre>{{ row|last }}</pre>
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
             {% endfor %}
         </tbody>
     </table>
@@ -52,26 +54,20 @@
     font-size: 0.85rem;
 }
 
-.traceback-content {
-    overflow: hidden;
+.traceback-wrapper pre {
     overflow-x: auto;
-    transition: max-height 0.2s ease;
 }
-
 </style>
 
 <script>
 function toggleTraceback(button) {
     const tr = button.closest("tr");
-    const tracebackRow = tr.nextElementSibling;
-    const preTag = tracebackRow.querySelector(".traceback-content");
+    const wrapper = tr.nextElementSibling.querySelector(".traceback-wrapper");
 
-    if (preTag.style.maxHeight && preTag.style.maxHeight !== "0px") {
-        setTimeout(() => tracebackRow.style.display = "none", 200);
-        preTag.style.maxHeight = "0";
+    if (wrapper.style.maxHeight && wrapper.style.maxHeight !== "0px") {
+        wrapper.style.maxHeight = "0";
     } else {
-        tracebackRow.style.display = "table-row";
-        preTag.style.maxHeight = preTag.scrollHeight + "px";
+        wrapper.style.maxHeight = wrapper.scrollHeight + "px";
     }
 }
 </script>
