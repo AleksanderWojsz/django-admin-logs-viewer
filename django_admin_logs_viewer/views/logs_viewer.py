@@ -11,18 +11,22 @@ def logs_viewer(request):
 
     # Just entered logs view
     if not current_path:
-        directories = []
+        items = []
         for log_dir in log_dirs:
-            directories.append({
+            items.append({
                 "name": os.path.basename(log_dir),
-                "path": log_dir
+                "path": log_dir,
+                "is_dir": os.path.isdir(log_dir)
             })
 
-        if len(directories) == 1: # Only one directory -> display its insights right away
-            drilled = _auto_drill_down(directories[0]["path"])
+        if len(items) == 1: # Only one directory -> display its insights right away
+            drilled = _auto_drill_down(items[0]["path"])
             return redirect(f"{request.path}?path={drilled}")
 
-        return render(request, "admin/logs_root.html", {"directories": directories})
+        return render(request, "admin/logs_dir.html", {
+            "items": items,
+            "breadcrumb": [{"name": "Log directories", "path": reverse("logs_viewer")}],
+        })
 
     current_path = os.path.abspath(current_path)
     current_path = _auto_drill_down(current_path)
