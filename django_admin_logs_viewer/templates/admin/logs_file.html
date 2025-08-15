@@ -1,0 +1,14 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<nav>
+    {% for crumb in breadcrumb %}
+        {% if not forloop.last %}
+            <a href="?path={{ crumb.path }}">{{ crumb.name }}</a> /
+        {% else %}
+            {{ crumb.name }}
+        {% endif %}
+    {% endfor %}
+</nav>
+
+{{ content }}
+{% endblock %}

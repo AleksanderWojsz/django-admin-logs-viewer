@@ -1,0 +1,11 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+
+<h1>Log Directories</h1>
+<ul>
+{% for d in directories %}
+    <li><a href="?path={{ d.path }}">{{ d.name }}</a></li>
+{% endfor %}
+</ul>
+
+{% endblock %}

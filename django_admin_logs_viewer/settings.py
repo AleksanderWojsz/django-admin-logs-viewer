@@ -180,3 +180,9 @@ LOGGING = {
         },
     }
 }
+
+import os
+LOGS_DIRS = [
+    os.path.join(BASE_DIR, "logs"),
+    os.path.join(BASE_DIR, "logs"),
+]
