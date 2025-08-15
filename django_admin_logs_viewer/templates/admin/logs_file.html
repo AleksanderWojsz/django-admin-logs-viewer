@@ -26,15 +26,19 @@
             <tr>
                 {% for value in row %}
                     {% if forloop.counter == column_names|length and value %}
-                        <td>
-                            <button type="button" class="button" onclick="toggleTraceback(this)">Show Traceback</button>
-                            <pre class="traceback-content" style="max-height: 0;">{{ value }}</pre> <!-- `max-height` is set inline, so it can be read in the script tag -->
-                        </td>
+                        <td><button type="button" class="button" onclick="toggleTraceback(this)">Show Traceback</button></td>
                     {% else %}
                         <td>{{ value }}</td>
                     {% endif %}
                 {% endfor %}
             </tr>
+            {% if row|last %}
+            <tr class="traceback-row" style="display:none;">
+                <td colspan="{{ column_names|length }}">
+                    <pre class="traceback-content" style="max-height: 0;">{{ row|last }}</pre> <!-- `max-height` is set inline, so it can be read in the script tag -->
+                </td>
+            </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
     </table>
@@ -44,8 +48,8 @@
 
 <style>
 .button {
-    padding: 6px 6px;
-    font-size: 14px;
+    padding: 4px 8px;
+    font-size: 0.85rem;
 }
 
 .traceback-content {
@@ -58,13 +62,17 @@
 
 <script>
 function toggleTraceback(button) {
-    const pre_tag = button.nextElementSibling;
-    if (pre_tag.style.maxHeight !== "0px") {
-        pre_tag.style.maxHeight = "0";
+    const tr = button.closest("tr");
+    const tracebackRow = tr.nextElementSibling;
+    const preTag = tracebackRow.querySelector(".traceback-content");
+
+    if (preTag.style.maxHeight && preTag.style.maxHeight !== "0px") {
+        setTimeout(() => tracebackRow.style.display = "none", 200);
+        preTag.style.maxHeight = "0";
     } else {
-        pre_tag.style.maxHeight = pre_tag.scrollHeight + "px";
+        tracebackRow.style.display = "table-row";
+        preTag.style.maxHeight = preTag.scrollHeight + "px";
     }
 }
 </script>
-
 {% endblock %}
