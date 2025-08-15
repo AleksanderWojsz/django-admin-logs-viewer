@@ -1,4 +1,6 @@
 import os
+import re
+import json
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect
@@ -52,19 +54,17 @@ def logs_viewer(request):
         with open(current_path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
 
-        separator = getattr(settings, "LOGS_SEPARATOR", None)
-        column_names = getattr(settings, "LOGS_COLUMN_NAMES", None)
-
         parsed_rows = None
-        if separator and column_names:
-            parsed_rows = _parse_logs(content, separator)
+        column_names = None
+        parser_config = getattr(settings, "LOGS_PARSER", None)
+        if parser_config:
+            column_names, parsed_rows = _parse_logs(content, parser_config)
 
-        breadcrumb = _build_breadcrumb(current_path, log_dirs)
         return render(request, "admin/logs_file.html", {
             "content": content if not parsed_rows else None,
             "rows": parsed_rows,
             "column_names": column_names,
-            "breadcrumb": breadcrumb
+            "breadcrumb": _build_breadcrumb(current_path, log_dirs)
         })
 
 def _build_breadcrumb(current_path, log_dirs):
@@ -96,9 +96,35 @@ def _auto_drill_down(path):
             break
     return path
 
-def _parse_logs(content, separator):
-    rows = []
-    for line in content.splitlines():
-        values = line.split(separator)
-        rows.append(values)
-    return rows
+def _parse_logs(content, parser_config):
+    parser_type = parser_config["type"]
+    column_names = parser_config.get("column_names", [])
+
+    if parser_type == "separator":
+        rows = []
+        for line in content.splitlines():
+            values = line.split(parser_config["separator"])
+            rows.append(values)
+        return column_names, rows
+
+    elif parser_type == "json":
+        rows = []
+
+        for line in content.splitlines():
+            line = line.replace("\\", "\\\\") # So \ works
+            obj = json.loads(line)
+            rows.append(obj.values())
+
+            if not column_names:
+                column_names = obj.keys()
+        return column_names, rows
+
+    else: # parser_type == "regex":
+        regex = re.compile(parser_config["pattern"])
+        rows = []
+
+        for line in content.splitlines():
+            match = regex.fullmatch(line)
+            if match:
+                rows.append(match.groups())
+        return column_names, rows

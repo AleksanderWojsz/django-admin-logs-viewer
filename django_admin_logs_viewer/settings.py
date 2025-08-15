@@ -134,11 +134,11 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
-            "format": '"level": "{levelname}" | "datetime": "{asctime}" | "source": "{name}" | "file": "{filename}:{lineno}" | "message": "{message}"',
+            "format": '{{ "level": "{levelname}", "datetime": "{asctime}", "source": "{name}", "file": "{filename}:{lineno}", "message": "{message}" }}',
             "style": "{",
         },
         "simple": {
-            "format": "[{levelname}] {filename} | {message}",
+            "format": "{levelname} {filename} {message}",
             "style": "{",
         },
     },
@@ -187,6 +187,20 @@ LOGS_DIRS = [
     os.path.join(BASE_DIR, "logs"),
 ]
 
-LOGS_SEPARATOR = "|"
-LOGS_COLUMN_NAMES = ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
 
+# LOGS_PARSER = {
+#     "type": "separator",
+#     "separator": "|",
+#     "column_names": ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
+# }
+
+# LOGS_PARSER = {
+#     "type": "regex",
+#     "pattern": r'\{\s*"level"\s*:\s*"([^"]+)"\s*,\s*"datetime"\s*:\s*"([^"]+)"\s*,\s*"source"\s*:\s*"([^"]+)"\s*,\s*"file"\s*:\s*"([^"]+)"\s*,\s*"message"\s*:\s*"([^"]+)"\s*\}',
+#     "column_names": ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
+# }
+
+LOGS_PARSER = {
+    "type": "json",
+    "column_names": ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
+}
