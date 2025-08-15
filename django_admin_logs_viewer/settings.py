@@ -134,11 +134,11 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
-            "format": '"level": "{levelname}", "datetime": "{asctime}", "source": "{name}", "file": "{filename}:{lineno}", "message": "{message}"',
+            "format": '"level": "{levelname}" | "datetime": "{asctime}" | "source": "{name}" | "file": "{filename}:{lineno}" | "message": "{message}"',
             "style": "{",
         },
         "simple": {
-            "format": "[{levelname}] {filename}; {message}",
+            "format": "[{levelname}] {filename} | {message}",
             "style": "{",
         },
     },
@@ -186,3 +186,7 @@ LOGS_DIRS = [
     os.path.join(BASE_DIR, "logs"),
     os.path.join(BASE_DIR, "logs"),
 ]
+
+LOGS_SEPARATOR = "|"
+LOGS_COLUMN_NAMES = ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
+

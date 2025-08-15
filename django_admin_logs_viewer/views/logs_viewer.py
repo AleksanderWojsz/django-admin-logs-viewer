@@ -51,9 +51,19 @@ def logs_viewer(request):
     else:
         with open(current_path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
+
+        separator = getattr(settings, "LOGS_SEPARATOR", None)
+        column_names = getattr(settings, "LOGS_COLUMN_NAMES", None)
+
+        parsed_rows = None
+        if separator and column_names:
+            parsed_rows = _parse_logs(content, separator)
+
         breadcrumb = _build_breadcrumb(current_path, log_dirs)
         return render(request, "admin/logs_file.html", {
-            "content": content,
+            "content": content if not parsed_rows else None,
+            "rows": parsed_rows,
+            "column_names": column_names,
             "breadcrumb": breadcrumb
         })
 
@@ -85,3 +95,10 @@ def _auto_drill_down(path):
         else:
             break
     return path
+
+def _parse_logs(content, separator):
+    rows = []
+    for line in content.splitlines():
+        values = line.split(separator)
+        rows.append(values)
+    return rows

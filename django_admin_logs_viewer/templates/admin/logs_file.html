@@ -12,5 +12,26 @@
     {% endfor %}
 </nav>
 
-{{ content }}
+{% if rows %}
+    <table>
+        <thead>
+            <tr>
+                {% for column_name in column_names %}
+                    <th>{{ column_name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+                <tr>
+                    {% for value in row %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <pre>{{ content }}</pre>
+{% endif %}
 {% endblock %}
