@@ -2,6 +2,7 @@ import os
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect
+from django.urls import reverse
 
 @staff_member_required
 def logs_viewer(request):
@@ -56,8 +57,13 @@ def _build_breadcrumb(current_path, log_dirs):
     for log_dir in log_dirs:
         if current_path.startswith(log_dir):
             relative_parts = os.path.relpath(current_path, log_dir).split(os.sep)
-            breadcrumb = [{"name": os.path.basename(log_dir), "path": log_dir}]
+            breadcrumb = [
+                {"name": "Log directories", "path": reverse("logs_viewer")},
+                {"name": os.path.basename(log_dir), "path": log_dir}
+            ]
             for part in relative_parts:
+                if part == ".":
+                    continue
                 breadcrumb.append({"name": part, "path": os.path.join(log_dir, part)})
             return breadcrumb
     return []

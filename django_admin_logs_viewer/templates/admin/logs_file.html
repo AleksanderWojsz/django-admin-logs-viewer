@@ -2,7 +2,9 @@
 {% block content %}
 <nav>
     {% for crumb in breadcrumb %}
-        {% if not forloop.last %}
+        {% if forloop.first %}
+            <a href="{{ crumb.path }}">{{ crumb.name }}</a> /
+        {% elif not forloop.last %}
             <a href="?path={{ crumb.path }}">{{ crumb.name }}</a> /
         {% else %}
             {{ crumb.name }}
