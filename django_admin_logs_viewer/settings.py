@@ -31,13 +31,13 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'django_admin_logs_viewer.apps.DjangoAdminLogsViewerConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_admin_logs_viewer.apps.DjangoAdminLogsViewerConfig',
 ]
 
 MIDDLEWARE = [
@@ -62,6 +62,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django_admin_logs_viewer.context_processors.logs_url',
             ],
         },
     },
