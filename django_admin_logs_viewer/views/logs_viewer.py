@@ -78,6 +78,7 @@ def logs_viewer(request):
         rows_per_page = getattr(settings, "LOGS_ROWS_PER_PAGE", 100)
         page_number = int(request.GET.get("page", 1))
         search_query = request.GET.get("search_query", "").strip()
+        level_filter = request.GET.get("level_filter", "").strip().lower()
 
         with open(current_path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
@@ -90,6 +91,16 @@ def logs_viewer(request):
                 if any(search_query.lower() in str(value).lower() for value in row):
                     filtered_rows.append(row)
             all_rows = filtered_rows
+
+        if level_filter:
+            level_column_index = list(map(lambda e: e.lower(), column_types)).index("level")
+            if level_column_index >= 0:
+                filtered_rows = []
+                for row in all_rows:
+                    row_level = str(row[level_column_index]).lower()
+                    if row_level == level_filter:
+                        filtered_rows.append(row)
+                all_rows = filtered_rows
 
         paginator = Paginator(all_rows, rows_per_page)
         page_obj = paginator.get_page(page_number)
@@ -104,6 +115,7 @@ def logs_viewer(request):
             "current_path": current_path,
             "page_obj": page_obj,
             "search_query": search_query,
+            "level_filter": level_filter,
         })
 
 def _build_breadcrumb(current_path, log_dirs):
