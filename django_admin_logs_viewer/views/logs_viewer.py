@@ -5,11 +5,31 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.http import FileResponse
+import shutil
+import tempfile
 
 @staff_member_required
 def logs_viewer(request):
     log_dirs = settings.LOGS_DIRS
     current_path = request.GET.get("path", "")
+
+    if request.GET.get("download"):
+        if not current_path: # Starting directory (one with listed log_dirs)
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
+            with tempfile.TemporaryDirectory() as tmpdir:
+                for i, log_dir in enumerate(log_dirs):
+                    if os.path.exists(log_dir):
+                        dst = os.path.join(tmpdir, f"{os.path.basename(log_dir)}_{i}")
+                        shutil.copytree(log_dir, dst)
+                shutil.make_archive(tmp.name, "zip", tmpdir)
+            return FileResponse(open(tmp.name + ".zip", "rb"), as_attachment=True, filename="all_logs.zip")
+        elif os.path.isdir(current_path):
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
+            shutil.make_archive(tmp.name, "zip", current_path)
+            return FileResponse(open(tmp.name + ".zip", "rb"), as_attachment=True, filename=os.path.basename(current_path) + ".zip")
+        elif os.path.isfile(current_path):
+            return FileResponse(open(current_path, "rb"), as_attachment=True, filename=os.path.basename(current_path))
 
     # Just entered logs view
     if not current_path:
@@ -28,6 +48,7 @@ def logs_viewer(request):
         return render(request, "admin/logs_dir.html", {
             "items": items,
             "breadcrumb": [{"name": "Log directories", "path": reverse("logs_viewer")}],
+            "current_path": current_path,
         })
 
     current_path = os.path.abspath(current_path)
@@ -47,7 +68,8 @@ def logs_viewer(request):
         breadcrumb = _build_breadcrumb(current_path, log_dirs)
         return render(request, "admin/logs_dir.html", {
             "items": items,
-            "breadcrumb": breadcrumb
+            "breadcrumb": breadcrumb,
+            "current_path": current_path,
         })
     # Handle files
     else:
@@ -64,7 +86,8 @@ def logs_viewer(request):
             "content": content if not parsed_rows else None,
             "rows": parsed_rows,
             "column_names": column_names,
-            "breadcrumb": _build_breadcrumb(current_path, log_dirs)
+            "breadcrumb": _build_breadcrumb(current_path, log_dirs),
+            "current_path": current_path,
         })
 
 def _build_breadcrumb(current_path, log_dirs):

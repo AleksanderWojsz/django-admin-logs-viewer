@@ -1,16 +1,21 @@
 {% extends "admin/base_site.html" %}
 {% block content %}
-<nav>
-    {% for crumb in breadcrumb %}
-        {% if forloop.first %}
-            <a href="{{ crumb.path }}">{{ crumb.name }}</a> /
-        {% elif not forloop.last %}
-            <a href="?path={{ crumb.path }}">{{ crumb.name }}</a> /
-        {% else %}
-            {{ crumb.name }}
-        {% endif %}
-    {% endfor %}
-</nav>
+<div style="display:flex; flex-direction: row; column-gap: 50px;">
+    <nav>
+        {% for crumb in breadcrumb %}
+            {% if forloop.first %}
+                <a href="{{ crumb.path }}">{{ crumb.name }}</a> /
+            {% elif not forloop.last %}
+                <a href="?path={{ crumb.path }}">{{ crumb.name }}</a> /
+            {% else %}
+                {{ crumb.name }}
+            {% endif %}
+        {% endfor %}
+    </nav>
+
+    <p><a href="?path={{ current_path }}&download=1" class="button">Download file</a></p>
+</div>
+
 
 {% if rows %}
     <table>
@@ -26,7 +31,7 @@
                 <tr>
                     {% for value in row %}
                         {% if forloop.counter == column_names|length and value %}
-                            <td><button type="button" class="button" onclick="toggleTraceback(this)">Show Traceback</button></td>
+                            <td><button type="button" class="button" onclick="toggleTraceback(this)" id="show-traceback-button">Show Traceback</button></td>
                         {% else %}
                             <td>{{ value }}</td>
                         {% endif %}
@@ -49,13 +54,14 @@
 {% endif %}
 
 <style>
-.button {
-    padding: 4px 8px;
-    font-size: 0.85rem;
-}
-
 .traceback-wrapper pre {
     overflow-x: auto;
+}
+
+a.button,
+#show-traceback-button {
+    font-size: 0.85rem;
+    padding: 4px 8px;
 }
 </style>
 

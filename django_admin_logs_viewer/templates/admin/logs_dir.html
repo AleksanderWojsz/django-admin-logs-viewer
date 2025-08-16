@@ -1,16 +1,20 @@
 {% extends "admin/base_site.html" %}
 {% block content %}
-<nav>
-    {% for crumb in breadcrumb %}
-        {% if forloop.first %}
-            <a href="{{ crumb.path }}">{{ crumb.name }}</a> /
-        {% elif not forloop.last %}
-            <a href="?path={{ crumb.path }}">{{ crumb.name }}</a> /
-        {% else %}
-            {{ crumb.name }}
-        {% endif %}
-    {% endfor %}
-</nav>
+<div style="display:flex; flex-direction: row; column-gap: 50px;">
+    <nav>
+        {% for crumb in breadcrumb %}
+            {% if forloop.first %}
+                <a href="{{ crumb.path }}">{{ crumb.name }}</a> /
+            {% elif not forloop.last %}
+                <a href="?path={{ crumb.path }}">{{ crumb.name }}</a> /
+            {% else %}
+                {{ crumb.name }}
+            {% endif %}
+        {% endfor %}
+    </nav>
+
+    <p><a href="?path={{ current_path }}&download=1" class="button">Download directory</a></p>
+</div>
 
 <ul>
 {% for item in items %}
@@ -21,4 +25,11 @@
     {% endif %}
 {% endfor %}
 </ul>
+
+<style>
+a.button {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+}
+</style>
 {% endblock %}
