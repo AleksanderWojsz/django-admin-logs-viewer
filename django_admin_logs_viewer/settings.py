@@ -207,3 +207,5 @@ LOGS_PARSER = {
 #     "pattern": r'\{\s*"level"\s*:\s*"([^"]+)"\s*,\s*"datetime"\s*:\s*"([^"]+)"\s*,\s*"source"\s*:\s*"([^"]+)"\s*,\s*"file"\s*:\s*"([^"]+)"\s*,\s*"message"\s*:\s*"([^"]+)"\s*\}',
 #     "column_names": ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
 # }
+
+LOGS_ROWS_PER_PAGE = 100

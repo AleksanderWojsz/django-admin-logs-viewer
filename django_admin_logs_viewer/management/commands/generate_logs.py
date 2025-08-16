@@ -14,8 +14,9 @@ class Command(BaseCommand):
         logger.critical("critical message")
 
         logger = logging.getLogger("other")
-        logger.debug("debug message")
-        logger.info("info message")
-        logger.warning("warning message")
-        logger.error("error message")
-        logger.critical("critical message")
+        for i in range(1000):
+            logger.debug("debug message")
+            logger.info("info message")
+            logger.warning("warning message")
+            logger.error("error message")
+            logger.critical("critical message")

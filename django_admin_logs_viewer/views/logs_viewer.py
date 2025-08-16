@@ -1,13 +1,14 @@
 import os
 import re
 import json
+import shutil
+import tempfile
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import FileResponse
-import shutil
-import tempfile
+from django.core.paginator import Paginator
 
 @staff_member_required
 def logs_viewer(request):
@@ -73,21 +74,35 @@ def logs_viewer(request):
         })
     # Handle files
     else:
+        parser_config = settings.LOGS_PARSER
+        rows_per_page = getattr(settings, "LOGS_ROWS_PER_PAGE", 100)
+        page_number = int(request.GET.get("page", 1))
+        search_query = request.GET.get("search_query", "").strip()
+
         with open(current_path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
 
-        parsed_rows = None
-        column_names = None
-        parser_config = getattr(settings, "LOGS_PARSER", None)
-        if parser_config:
-            column_names, parsed_rows = _parse_logs(content, parser_config)
+        column_names, all_rows = _parse_logs(content, parser_config)
+
+        if search_query:
+            filtered_rows = []
+            for row in all_rows:
+                if any(search_query.lower() in str(value).lower() for value in row):
+                    filtered_rows.append(row)
+            all_rows = filtered_rows
+
+        paginator = Paginator(all_rows, rows_per_page)
+        page_obj = paginator.get_page(page_number)
+        rows = page_obj.object_list
 
         return render(request, "admin/logs_file.html", {
-            "content": content if not parsed_rows else None,
-            "rows": parsed_rows,
+            "content": None if parser_config else content,
+            "rows": rows,
             "column_names": column_names,
             "breadcrumb": _build_breadcrumb(current_path, log_dirs),
             "current_path": current_path,
+            "page_obj": page_obj,
+            "search_query": search_query,
         })
 
 def _build_breadcrumb(current_path, log_dirs):
