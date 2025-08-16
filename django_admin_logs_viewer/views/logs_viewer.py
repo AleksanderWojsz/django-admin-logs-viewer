@@ -82,7 +82,7 @@ def logs_viewer(request):
         with open(current_path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
 
-        column_names, all_rows = _parse_logs(content, parser_config)
+        column_names, column_types, all_rows = _parse_logs(content, parser_config)
 
         if search_query:
             filtered_rows = []
@@ -99,6 +99,7 @@ def logs_viewer(request):
             "content": None if parser_config else content,
             "rows": rows,
             "column_names": column_names,
+            "column_types": column_types,
             "breadcrumb": _build_breadcrumb(current_path, log_dirs),
             "current_path": current_path,
             "page_obj": page_obj,
@@ -137,6 +138,7 @@ def _auto_drill_down(path):
 def _parse_logs(content, parser_config):
     parser_type = parser_config["type"]
     column_names = list(parser_config.get("column_names", [])) # List, so copy it made
+    column_types = parser_config.get("column_types", [])
     separators = getattr(settings, "LOGS_SEPARATORS", [])
 
     records = _split_log_records(content, separators)
@@ -164,7 +166,7 @@ def _parse_logs(content, parser_config):
 
     column_names += ["Traceback"]
 
-    return column_names, rows
+    return column_names, column_types, rows
 
 def _split_log_records(content, separators):
     separator_pattern = re.compile("|".join(separators), re.MULTILINE)

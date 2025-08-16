@@ -122,6 +122,44 @@ function toggleTraceback(button) {
         wrapper.style.maxHeight = wrapper.scrollHeight + "px";
     }
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+
+    const theme = document.documentElement.getAttribute("data-theme");
+    const levelColorsLight = {
+        "debug": "#f0f0f0",
+        "info": "#ced9f5",
+        "warning": "#fff3cd",
+        "error": "#f7c3c9",
+        "critical": "#f2919c"
+    };
+    const levelColorsDark = {
+        "debug": "#333333",
+        "info": "#3055b3",
+        "warning": "#7d661b",
+        "error": "#721c24",
+        "critical": "#4b0b0b"
+    };
+    const levelColors = theme === "dark" ? levelColorsDark : levelColorsLight;
+
+    let levelIndex = -1;
+    document.querySelectorAll("table thead th").forEach((th, i) => {
+        if (th.innerText.trim().toLowerCase() === "level") {
+            levelIndex = i;
+        }
+    });
+
+    if (levelIndex === -1) {
+        return;
+    }
+
+    document.querySelectorAll("table tbody tr").forEach(tr => {
+        const cells = tr.querySelectorAll("td");
+        const text = cells[levelIndex].innerText.trim().toLowerCase();
+        tr.style.backgroundColor = levelColors[text];
+    });
+});
+
 </script>
 
 {% endblock %}

@@ -149,7 +149,7 @@ LOGGING = {
             "formatter": "simple",
         },
         "file_commands": {
-            "level": "INFO",
+            "level": "DEBUG",
             "class": "logging.handlers.TimedRotatingFileHandler",
             "filename": LOGS_SAVE_PATH / 'commands' / 'logfile_commands.log',
             "when": "midnight",
@@ -199,7 +199,8 @@ LOGS_SEPARATORS = [
 
 LOGS_PARSER = {
     "type": "json",
-    "column_names": ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
+    "column_names": ["Level", "Time", "Path", "Line No ", "Message"],
+    "column_types": ["LEVEL", "TIME", "OTHER", "OTHER", "OTHER"],
 }
 
 # LOGS_PARSER = {
