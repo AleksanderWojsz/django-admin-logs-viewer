@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -181,7 +182,6 @@ LOGGING = {
     }
 }
 
-import os
 LOGS_DIRS = [
     os.path.join(BASE_DIR, "logs"),
     os.path.join(BASE_DIR, "logs"),
@@ -194,19 +194,19 @@ LOGS_SEPARATORS = [
 # LOGS_PARSER = {
 #     "type": "separator",
 #     "separator": "|",
-#     "column_names": ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
+#     "column_names": ["Level", "Time", "Path", "File & Line No ", "Message"],
 # }
 
 LOGS_PARSER = {
     "type": "json",
-    "column_names": ["Level", "Time", "Path", "Line No ", "Message"],
+    "column_names": ["Level", "Time", "Path", "File & Line No ", "Message"],
     "column_types": ["LEVEL", "TIME", "OTHER", "OTHER", "OTHER"],
 }
 
 # LOGS_PARSER = {
 #     "type": "regex",
 #     "pattern": r'\{\s*"level"\s*:\s*"([^"]+)"\s*,\s*"datetime"\s*:\s*"([^"]+)"\s*,\s*"source"\s*:\s*"([^"]+)"\s*,\s*"file"\s*:\s*"([^"]+)"\s*,\s*"message"\s*:\s*"([^"]+)"\s*\}',
-#     "column_names": ["LEVEL", "TIME", "OTHER", "OTHER", "MESSAGE"]
+#     "column_names": ["Level", "Time", "Path", "File & Line No ", "Message"],
 # }
 
 LOGS_ROWS_PER_PAGE = 100

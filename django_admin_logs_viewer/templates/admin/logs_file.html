@@ -1,4 +1,5 @@
 {% extends "admin/base_site.html" %}
+
 {% block content %}
 
 <nav>
@@ -16,9 +17,6 @@
 <div style="display:flex; flex-direction: row; align-items: center; column-gap: 50px; margin-bottom: 1rem; margin-top: 1rem;">
 
     <form method="get" style="display:flex; gap: 0.5rem; align-items:center;">
-        <input type="hidden" name="path" value="{{ current_path }}">
-        <input type="text" name="search_query" placeholder="Search" value="{{ search_query }}">
-
         <select name="level_filter">
             <option value="">All Levels</option>
             <option value="debug" {% if level_filter == 'debug' %}selected{% endif %}>DEBUG</option>
@@ -27,6 +25,12 @@
             <option value="error" {% if level_filter == 'error' %}selected{% endif %}>ERROR</option>
             <option value="critical" {% if level_filter == 'critical' %}selected{% endif %}>CRITICAL</option>
         </select>
+
+        <input type="datetime-local" name="time_from" value="{{ request.GET.time_from }}">
+        <input type="datetime-local" name="time_to" value="{{ request.GET.time_to }}">
+
+        <input type="hidden" name="path" value="{{ current_path }}">
+        <input type="text" name="search_query" placeholder="Search" value="{{ search_query }}">
 
         <button type="submit" class="button">Search</button>
     </form>
@@ -93,6 +97,16 @@ thead {
 
 thead th {
     text-transform: none;
+}
+
+/* Copied from `input` section from `django admin base.css` */
+input[type="datetime-local"] {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 5px 6px;
+    margin-top: 0;
+    color: var(--body-fg);
+    background-color: var(--body-bg);
 }
 
 .traceback-wrapper pre {

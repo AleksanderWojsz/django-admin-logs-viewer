@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import FileResponse
 from django.core.paginator import Paginator
+from datetime import datetime
 
 @staff_member_required
 def logs_viewer(request):
@@ -79,6 +80,8 @@ def logs_viewer(request):
         page_number = int(request.GET.get("page", 1))
         search_query = request.GET.get("search_query", "").strip()
         level_filter = request.GET.get("level_filter", "").strip().lower()
+        time_from = request.GET.get("time_from", "").strip()
+        time_to = request.GET.get("time_to", "").strip()
 
         with open(current_path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
@@ -101,6 +104,24 @@ def logs_viewer(request):
                     if row_level == level_filter:
                         filtered_rows.append(row)
                 all_rows = filtered_rows
+
+        if (time_from or time_to) and column_types:
+            time_column_index = list(map(lambda e: e.lower(), column_types)).index("time")
+            filtered_rows = []
+            for row in all_rows:
+                row_time = datetime.fromisoformat(row[time_column_index])
+                include = True
+                if time_from:
+                    from_dt = datetime.fromisoformat(time_from)
+                    if row_time < from_dt:
+                        include = False
+                if time_to:
+                    to_dt = datetime.fromisoformat(time_to)
+                    if row_time > to_dt:
+                        include = False
+                if include:
+                    filtered_rows.append(row)
+            all_rows = filtered_rows
 
         paginator = Paginator(all_rows, rows_per_page)
         page_obj = paginator.get_page(page_number)
@@ -173,6 +194,8 @@ def _parse_logs(content, parser_config):
 
         if traceback_text:
             values.append(traceback_text[0])
+        else:
+            values.append("")
 
         rows.append(values)
 
