@@ -142,20 +142,18 @@ document.addEventListener("DOMContentLoaded", function() {
     };
     const levelColors = theme === "dark" ? levelColorsDark : levelColorsLight;
 
-    let levelIndex = -1;
-    document.querySelectorAll("table thead th").forEach((th, i) => {
-        if (th.innerText.trim().toLowerCase() === "level") {
-            levelIndex = i;
-        }
-    });
+    const stringColumnTypes = '{{ column_types|safe|escapejs }}'.replaceAll("'", "\"")
+    let columnTypes = JSON.parse(stringColumnTypes);
+    columnTypes = columnTypes.map(e => e.toLowerCase());
+    levelColumnIndex = columnTypes.indexOf("level");
 
-    if (levelIndex === -1) {
+    if (levelColumnIndex === -1) {
         return;
     }
 
     document.querySelectorAll("table tbody tr").forEach(tr => {
         const cells = tr.querySelectorAll("td");
-        const text = cells[levelIndex].innerText.trim().toLowerCase();
+        const text = cells[levelColumnIndex].innerText.trim().toLowerCase();
         tr.style.backgroundColor = levelColors[text];
     });
 });
