@@ -1,19 +1,20 @@
 {% extends "admin/base_site.html" %}
 
-{% block content %}
-
-<nav>
-    {% for crumb in breadcrumb %}
-        {% if forloop.first %}
-            <a href="{{ crumb.path }}">{{ crumb.name }}</a> /
-        {% elif not forloop.last %}
-            <a href="?path={{ crumb.path }}">{{ crumb.name }}</a> /
-        {% else %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    {% for crumb in breadcrumbs %}
+        &rsaquo;
+        {% if forloop.last %}
             {{ crumb.name }}
+        {% else %}
+            <a href="{{ crumb.url }}">{{ crumb.name }}</a>
         {% endif %}
     {% endfor %}
-</nav>
+</div>
+{% endblock %}
 
+{% block content %}
 <div style="display:flex; flex-direction: row; align-items: center; column-gap: 50px; margin-bottom: 1rem; margin-top: 1rem;">
 
     <form method="get" style="display:flex; gap: 0.5rem; align-items:center;">
@@ -61,7 +62,7 @@
                 {% if row|length == column_names|length and row|last %}
                 <tr class="traceback-row">
                     <td colspan="{{ column_names|length }}" style="padding: 5px; border: none;">
-                        <div class="traceback-wrapper" style="max-height: 0; overflow: hidden; transition: max-height 0.2s;"> <!-- `max-height` is set inline, so it can be read in the script tag -->
+                        <div class="traceback-wrapper" style="max-height: 0; overflow: hidden; transition: max-height 0.2s;">
                             <pre>{{ row|last }}</pre>
                         </div>
                     </td>
@@ -88,7 +89,6 @@
     {% endif %}
 </div>
 
-
 <style>
 thead {
     position: sticky;
@@ -99,7 +99,6 @@ thead th {
     text-transform: none;
 }
 
-/* Copied from `input` section from `django admin base.css` */
 input[type="datetime-local"] {
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -134,7 +133,6 @@ button.button,
 }
 </style>
 
-
 <script>
 function toggleTraceback(button) {
     const tr = button.closest("tr");
@@ -148,7 +146,6 @@ function toggleTraceback(button) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-
     const theme = document.documentElement.getAttribute("data-theme");
     const levelColorsLight = {
         "debug": "#f0f0f0",
@@ -181,7 +178,5 @@ document.addEventListener("DOMContentLoaded", function() {
         tr.style.backgroundColor = levelColors[text];
     });
 });
-
 </script>
-
 {% endblock %}

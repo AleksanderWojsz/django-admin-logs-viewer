@@ -49,8 +49,8 @@ def logs_viewer(request):
 
         return render(request, "admin/logs_dir.html", {
             "items": items,
-            "breadcrumb": [{"name": "Log directories", "path": reverse("logs_viewer")}],
             "current_path": current_path,
+            "breadcrumbs": _build_breadcrumbs(current_path, log_dirs),
         })
 
     current_path = os.path.abspath(current_path)
@@ -67,11 +67,10 @@ def logs_viewer(request):
                 "is_dir": os.path.isdir(item_path)
             })
 
-        breadcrumb = _build_breadcrumb(current_path, log_dirs)
         return render(request, "admin/logs_dir.html", {
             "items": items,
-            "breadcrumb": breadcrumb,
             "current_path": current_path,
+            "breadcrumbs": _build_breadcrumbs(current_path, log_dirs),
         })
     # Handle files
     else:
@@ -132,27 +131,38 @@ def logs_viewer(request):
             "rows": rows,
             "column_names": column_names,
             "column_types": column_types,
-            "breadcrumb": _build_breadcrumb(current_path, log_dirs),
             "current_path": current_path,
             "page_obj": page_obj,
             "search_query": search_query,
             "level_filter": level_filter,
+            "breadcrumbs": _build_breadcrumbs(current_path, log_dirs),
         })
 
-def _build_breadcrumb(current_path, log_dirs):
+def _build_breadcrumbs(current_path, log_dirs):
+    breadcrumbs = [{
+        'name': 'Logs',
+        'url': reverse('logs_viewer')
+    }]
+
     for log_dir in log_dirs:
         if current_path.startswith(log_dir):
             relative_parts = os.path.relpath(current_path, log_dir).split(os.sep)
-            breadcrumb = [
-                {"name": "Log directories", "path": reverse("logs_viewer")},
-                {"name": os.path.basename(log_dir), "path": log_dir}
-            ]
+            breadcrumbs.append({
+                'name': os.path.basename(log_dir),
+                'url': f"{reverse('logs_viewer')}?path={log_dir}"
+            })
+            accumulated_path = log_dir
             for part in relative_parts:
-                if part == ".":
+                if part == '.':
                     continue
-                breadcrumb.append({"name": part, "path": os.path.join(log_dir, part)})
-            return breadcrumb
-    return []
+                accumulated_path = os.path.join(accumulated_path, part)
+                breadcrumbs.append({
+                    'name': part,
+                    'url': f"{reverse('logs_viewer')}?path={accumulated_path}"
+                })
+            break
+
+    return breadcrumbs
 
 def _auto_drill_down(path):
     """Keep going down if directory contains only one subdirectory and no files."""
