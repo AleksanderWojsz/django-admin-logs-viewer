@@ -4,7 +4,7 @@
 <div class="breadcrumbs">
     <a href="{% url 'admin:index' %}">Home</a>
     {% for crumb in breadcrumbs %}
-        &rsaquo;
+        ›
         {% if forloop.last %}
             {{ crumb.name }}
         {% else %}

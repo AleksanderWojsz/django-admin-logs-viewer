@@ -1,8 +1,22 @@
 {% extends "admin/base_site.html" %}
 
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    {% for crumb in breadcrumbs %}
+        ›
+        {% if forloop.last %}
+            {{ crumb.name }}
+        {% else %}
+            <a href="{{ crumb.url }}">{{ crumb.name }}</a>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="errornote">
-    <h2>Configuration Errors</h2>
+    <h2>Errors</h2>
     <ul>
         {% for error in errors %}
             <li>{{ error }}</li>

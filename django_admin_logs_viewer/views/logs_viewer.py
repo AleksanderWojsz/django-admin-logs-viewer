@@ -26,6 +26,14 @@ def logs_viewer(request):
     log_dirs = app_settings.LOGS_DIRS
     current_path = request.GET.get("path", "")
 
+    if current_path:
+        current_path = os.path.abspath(current_path)
+        if not _is_inside_logs_dirs(current_path):
+            return render(request, "admin/errors.html", {
+                "errors": ["Path does not exist or is outside of LOGS_DIRS."],
+                "breadcrumbs": [{"name": "Logs error", "url": ""}],
+            })
+
     if request.GET.get("download"):
         if not current_path: # Starting directory (one with listed log_dirs)
             tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
@@ -246,15 +254,23 @@ def _split_log_records(content, separators):
 
     return records
 
+def _is_inside_logs_dirs(path):
+    path = os.path.abspath(path)
+    for log_dir in app_settings.LOGS_DIRS:
+        log_dir = os.path.abspath(log_dir)
+        if os.path.commonpath([path, log_dir]) == log_dir:
+            return True
+    return False
+
 def _validate_settings():
     errors = []
 
     if not app_settings.LOGS_DIRS or not isinstance(app_settings.LOGS_DIRS, list):
         errors.append("LOGS_DIRS must be a non-empty list of paths.")
-
-    for d in app_settings.LOGS_DIRS:
-        if not os.path.exists(d):
-            errors.append(f"Log directory does not exist: {d}")
+    else:
+        for d in app_settings.LOGS_DIRS:
+            if not os.path.exists(d):
+                errors.append(f"Log directory does not exist: {d}")
 
     if not isinstance(app_settings.LOGS_PARSER, dict):
         errors.append("LOGS_PARSER must be defined as a dictionary.")

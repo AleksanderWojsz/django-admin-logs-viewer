@@ -3,6 +3,6 @@ from django.urls import path
 from django_admin_logs_viewer.views.logs_viewer import logs_viewer
 
 urlpatterns = [
-    path('logs/', logs_viewer, name='logs_viewer'),
+    path('admin/logs/', logs_viewer, name='logs_viewer'),
     path('admin/', admin.site.urls),
 ]
