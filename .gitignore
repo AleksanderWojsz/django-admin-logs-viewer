@@ -1,4 +1,5 @@
 db.sqlite3
-logs
-*.egg-info
 dist
+logs
+*pyc
+*.egg-info

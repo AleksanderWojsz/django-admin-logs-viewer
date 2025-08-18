@@ -3,6 +3,7 @@ import re
 import json
 import shutil
 import tempfile
+import logging
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect
@@ -13,6 +14,15 @@ from datetime import datetime
 
 @staff_member_required
 def logs_viewer(request):
+    errors = _validate_settings()
+    if errors:
+        for e in errors:
+            logging.error(e)
+        return render(request, "admin/errors.html", {
+            "errors": errors,
+            "breadcrumbs": [{"name": "Logs error", "url": ""}],
+        })
+
     log_dirs = settings.LOGS_DIRS
     current_path = request.GET.get("path", "")
 
@@ -140,7 +150,7 @@ def logs_viewer(request):
 
 def _build_breadcrumbs(current_path, log_dirs):
     breadcrumbs = [{
-        'name': 'Logs',
+        'name': 'Logs directories',
         'url': reverse('logs_viewer')
     }]
 
@@ -188,26 +198,32 @@ def _parse_logs(content, parser_config):
     rows = []
 
     for record in records:
-        main_line, *traceback_text = record.split("\n", maxsplit=1)
+        try:
+            main_line, *traceback_text = record.split("\n", maxsplit=1)
 
-        if parser_type == "separator":
-            values = main_line.split(parser_config["separator"])
-        elif parser_type == "json":
-            main_line = main_line.replace("\\", "\\\\") # So `\` is parsed correctly
-            obj = json.loads(main_line)
-            if not column_names:
-                column_names = list(obj.keys())
-            values = list(obj.values())
-        else: # parser_type == "regex":
-            match = re.fullmatch(parser_config["pattern"], main_line)
-            values = list(match.groups())
+            if parser_type == "separator":
+                values = main_line.split(parser_config["separator"])
+            elif parser_type == "json":
+                main_line = main_line.replace("\\", "\\\\") # So `\` is parsed correctly
+                obj = json.loads(main_line)
+                if not column_names:
+                        column_names = list(obj.keys())
+                values = list(obj.values())
+            else: # parser_type == "regex":
+                match = re.fullmatch(parser_config["pattern"], main_line)
+                if not match:
+                    raise ValueError(f"Regex did not match line: {main_line}")
+                values = list(match.groups())
 
-        if traceback_text:
-            values.append(traceback_text[0])
-        else:
-            values.append("")
+            if traceback_text:
+                values.append(traceback_text[0])
+            else:
+                values.append("")
 
-        rows.append(values)
+            rows.append(values)
+
+        except Exception as e:
+            rows.append([f"Parse error: {e}", record])
 
     column_names += ["Traceback"]
 
@@ -229,3 +245,36 @@ def _split_log_records(content, separators):
         records.append("\n".join(current_record))
 
     return records
+
+def _validate_settings():
+    errors = []
+
+    if not hasattr(settings, "LOGS_DIRS") or not isinstance(settings.LOGS_DIRS, list) or not settings.LOGS_DIRS:
+        errors.append("LOGS_DIRS must be a non-empty list of paths.")
+
+    if hasattr(settings, "LOGS_DIRS"):
+        for d in settings.LOGS_DIRS:
+            if not os.path.exists(d):
+                errors.append(f"Log directory does not exist: {d}")
+
+    if not hasattr(settings, "LOGS_PARSER") or not isinstance(settings.LOGS_PARSER, dict):
+        errors.append("LOGS_PARSER must be defined as a dictionary.")
+    else:
+        parser = settings.LOGS_PARSER
+        if "type" not in parser:
+            errors.append("LOGS_PARSER must define 'type'.")
+        elif parser["type"] not in ("separator", "json", "regex"):
+            errors.append("LOGS_PARSER['type'] must be one of: separator, json, regex.")
+
+        if parser["type"] == "separator" and "separator" not in parser:
+            errors.append("LOGS_PARSER['separator'] is required for type 'separator'.")
+        if parser["type"] == "regex" and "pattern" not in parser:
+            errors.append("LOGS_PARSER['pattern'] is required for type 'regex'.")
+
+    if not hasattr(settings, "LOGS_SEPARATORS") or not isinstance(settings.LOGS_SEPARATORS, list) or not settings.LOGS_SEPARATORS:
+        errors.append("LOGS_SEPARATORS must be a non-empty list of regex patterns.")
+
+    if hasattr(settings, "LOGS_ROWS_PER_PAGE") and settings.LOGS_ROWS_PER_PAGE <= 0:
+        errors.append("LOGS_ROWS_PER_PAGE should be > 0")
+
+    return errors
