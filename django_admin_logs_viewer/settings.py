@@ -211,4 +211,4 @@ LOGS_PARSER = {
 #     "column_types": ["LEVEL", "TIME", "OTHER", "OTHER", "OTHER"],
 # }
 
-LOGS_ROWS_PER_PAGE = 50
+# LOGS_ROWS_PER_PAGE = 50

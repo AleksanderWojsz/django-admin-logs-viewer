@@ -4,13 +4,13 @@ import json
 import shutil
 import tempfile
 import logging
-from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import FileResponse
 from django.core.paginator import Paginator
 from datetime import datetime
+from django_admin_logs_viewer.conf import app_settings
 
 @staff_member_required
 def logs_viewer(request):
@@ -23,7 +23,7 @@ def logs_viewer(request):
             "breadcrumbs": [{"name": "Logs error", "url": ""}],
         })
 
-    log_dirs = settings.LOGS_DIRS
+    log_dirs = app_settings.LOGS_DIRS
     current_path = request.GET.get("path", "")
 
     if request.GET.get("download"):
@@ -84,8 +84,8 @@ def logs_viewer(request):
         })
     # Handle files
     else:
-        parser_config = settings.LOGS_PARSER
-        rows_per_page = getattr(settings, "LOGS_ROWS_PER_PAGE", 100)
+        parser_config = app_settings.LOGS_PARSER
+        rows_per_page = app_settings.LOGS_ROWS_PER_PAGE
         page_number = int(request.GET.get("page", 1))
         search_query = request.GET.get("search_query", "").strip()
         level_filter = request.GET.get("level_filter", "").strip().lower()
@@ -192,7 +192,7 @@ def _parse_logs(content, parser_config):
     parser_type = parser_config["type"]
     column_names = list(parser_config.get("column_names", [])) # List, so copy it made
     column_types = parser_config.get("column_types", [])
-    separators = getattr(settings, "LOGS_SEPARATORS", [])
+    separators = app_settings.LOGS_SEPARATORS
 
     records = _split_log_records(content, separators)
     rows = []
@@ -249,18 +249,17 @@ def _split_log_records(content, separators):
 def _validate_settings():
     errors = []
 
-    if not hasattr(settings, "LOGS_DIRS") or not isinstance(settings.LOGS_DIRS, list) or not settings.LOGS_DIRS:
+    if not app_settings.LOGS_DIRS or not isinstance(app_settings.LOGS_DIRS, list):
         errors.append("LOGS_DIRS must be a non-empty list of paths.")
 
-    if hasattr(settings, "LOGS_DIRS"):
-        for d in settings.LOGS_DIRS:
-            if not os.path.exists(d):
-                errors.append(f"Log directory does not exist: {d}")
+    for d in app_settings.LOGS_DIRS:
+        if not os.path.exists(d):
+            errors.append(f"Log directory does not exist: {d}")
 
-    if not hasattr(settings, "LOGS_PARSER") or not isinstance(settings.LOGS_PARSER, dict):
+    if not isinstance(app_settings.LOGS_PARSER, dict):
         errors.append("LOGS_PARSER must be defined as a dictionary.")
     else:
-        parser = settings.LOGS_PARSER
+        parser = app_settings.LOGS_PARSER
         if "type" not in parser:
             errors.append("LOGS_PARSER must define 'type'.")
         elif parser["type"] not in ("separator", "json", "regex"):
@@ -271,10 +270,10 @@ def _validate_settings():
         if parser["type"] == "regex" and "pattern" not in parser:
             errors.append("LOGS_PARSER['pattern'] is required for type 'regex'.")
 
-    if not hasattr(settings, "LOGS_SEPARATORS") or not isinstance(settings.LOGS_SEPARATORS, list) or not settings.LOGS_SEPARATORS:
+    if not app_settings.LOGS_SEPARATORS or not isinstance(app_settings.LOGS_SEPARATORS, list):
         errors.append("LOGS_SEPARATORS must be a non-empty list of regex patterns.")
 
-    if hasattr(settings, "LOGS_ROWS_PER_PAGE") and settings.LOGS_ROWS_PER_PAGE <= 0:
+    if app_settings.LOGS_ROWS_PER_PAGE and app_settings.LOGS_ROWS_PER_PAGE <= 0:
         errors.append("LOGS_ROWS_PER_PAGE should be > 0")
 
     return errors
