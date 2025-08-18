@@ -29,4 +29,4 @@ classifiers = [
 Homepage = "https://www.example.com/"
 
 [tool.setuptools.packages.find]
-exclude = ["/logs"]
+exclude = ["example_project*"]
