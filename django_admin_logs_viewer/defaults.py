@@ -3,4 +3,5 @@ DEFAULTS = {
         "type": "json",
     },
     "LOGS_ROWS_PER_PAGE": 100,
+    "SHOW_ERRORS_SINCE_LAST_LOG_IN": True,
 }

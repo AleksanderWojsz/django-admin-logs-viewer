@@ -170,7 +170,7 @@ LOGGING = {
         },
     },
     "loggers": {
-        "django_admin_logs_viewer.management.commands": {
+        "example_project.management.commands": {
             "level": "DEBUG",
             "handlers": ["file_commands", "console"],
             "propagate": False,
@@ -215,3 +215,6 @@ LOGS_PARSER = {
 # }
 
 # LOGS_ROWS_PER_PAGE = 50
+
+SHOW_ERRORS_SINCE_LAST_LOG_IN = True
+LOGS_TIMEZONE = "Europe/Warsaw"

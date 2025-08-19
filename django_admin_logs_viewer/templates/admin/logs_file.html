@@ -18,7 +18,7 @@
 <div style="display:flex; flex-direction: row; align-items: center; column-gap: 50px; margin-bottom: 1rem; margin-top: 1rem;">
 
     <form method="get" style="display:flex; gap: 0.5rem; align-items:center;">
-        <select name="level_filter">
+        <select name="level_filter" onchange="this.form.submit()">
             <option value="">All Levels</option>
             <option value="debug" {% if level_filter == 'debug' %}selected{% endif %}>DEBUG</option>
             <option value="info" {% if level_filter == 'info' %}selected{% endif %}>INFO</option>
@@ -27,8 +27,8 @@
             <option value="critical" {% if level_filter == 'critical' %}selected{% endif %}>CRITICAL</option>
         </select>
 
-        <input type="datetime-local" name="time_from" value="{{ request.GET.time_from }}">
-        <input type="datetime-local" name="time_to" value="{{ request.GET.time_to }}">
+        <input type="datetime-local" name="time_from" value="{{ request.GET.time_from }}" onchange="this.form.submit()">
+        <input type="datetime-local" name="time_to" value="{{ request.GET.time_to }}" onchange="this.form.submit()">
 
         <input type="hidden" name="path" value="{{ current_path }}">
         <input type="text" name="search_query" placeholder="Search" value="{{ search_query }}">

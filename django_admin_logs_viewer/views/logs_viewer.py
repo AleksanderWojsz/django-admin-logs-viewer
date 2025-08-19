@@ -4,6 +4,7 @@ import json
 import shutil
 import tempfile
 import logging
+import pytz
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -11,6 +12,7 @@ from django.http import FileResponse
 from django.core.paginator import Paginator
 from datetime import datetime
 from django_admin_logs_viewer.conf import app_settings
+from django.utils import timezone
 
 @staff_member_required
 def logs_viewer(request):
@@ -55,10 +57,14 @@ def logs_viewer(request):
     if not current_path:
         items = []
         for log_dir in log_dirs:
+            is_dir = os.path.isdir(log_dir)
+            errors_count = _count_errors_in_dir(log_dir, request)
+
             items.append({
                 "name": os.path.basename(log_dir),
                 "path": log_dir,
-                "is_dir": os.path.isdir(log_dir)
+                "is_dir": is_dir,
+                "errors_since_last_login": errors_count
             })
 
         if len(items) == 1: # Only one directory -> display its insights right away
@@ -79,10 +85,14 @@ def logs_viewer(request):
         items = []
         for name in sorted(os.listdir(current_path)):
             item_path = os.path.join(current_path, name)
+            is_dir = os.path.isdir(item_path)
+            errors_count = _count_errors_in_dir(item_path, request)
+
             items.append({
                 "name": name,
                 "path": item_path,
-                "is_dir": os.path.isdir(item_path)
+                "is_dir": is_dir,
+                "errors_since_last_login": errors_count,
             })
 
         return render(request, "admin/logs_dir.html", {
@@ -155,6 +165,66 @@ def logs_viewer(request):
             "level_filter": level_filter,
             "breadcrumbs": _build_breadcrumbs(current_path, log_dirs),
         })
+
+def _count_errors_in_rows(all_rows, column_types, request):
+    prev_login_str = request.session.get('previous_login')
+
+    if not prev_login_str or not hasattr(app_settings, "LOGS_TIMEZONE"):
+        return 0
+
+    try:
+        prev_login = datetime.fromisoformat(prev_login_str)
+    except Exception:
+        return 0
+
+    log_tz = pytz.timezone(app_settings.LOGS_TIMEZONE)
+
+    if timezone.is_naive(prev_login):
+        prev_login = log_tz.localize(prev_login)
+
+    errors_count = 0
+    column_types_lower = [s.lower() for s in column_types]
+
+    try:
+        time_column_index = column_types_lower.index("time")
+        level_column_index = column_types_lower.index("level")
+    except ValueError:
+        return 0
+
+    for row in all_rows:
+        row_time = datetime.fromisoformat(str(row[time_column_index]))
+        if timezone.is_naive(row_time):
+            row_time = log_tz.localize(row_time)
+
+        row_level = str(row[level_column_index]).lower()
+        if row_time >= prev_login and row_level in ("error", "critical"):
+            errors_count += 1
+
+    return errors_count
+
+def _count_errors_in_dir(path, request):
+    if not app_settings.SHOW_ERRORS_SINCE_LAST_LOG_IN:
+        return 0
+
+    total_errors = 0
+    parser_config = app_settings.LOGS_PARSER
+
+    if os.path.isfile(path):
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+        column_names, column_types, all_rows = _parse_logs(content, parser_config)
+        total_errors += _count_errors_in_rows(all_rows, column_types, request)
+
+    elif os.path.isdir(path):
+        for root, dirs, files in os.walk(path):
+            for filename in files:
+                file_path = os.path.join(root, filename)
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read()
+                column_names, column_types, all_rows = _parse_logs(content, parser_config)
+                total_errors += _count_errors_in_rows(all_rows, column_types, request)
+
+    return total_errors
 
 def _build_breadcrumbs(current_path, log_dirs):
     breadcrumbs = [{

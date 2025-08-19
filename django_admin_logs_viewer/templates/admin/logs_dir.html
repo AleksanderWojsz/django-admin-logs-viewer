@@ -21,11 +21,25 @@
 
 <ul>
 {% for item in items %}
-    {% if item.is_dir %}
-        <li>📁 <a href="?path={{ item.path }}">{{ item.name }}</a></li>
-    {% else %}
-        <li>📄 <a href="?path={{ item.path }}">{{ item.name }}</a></li>
-    {% endif %}
+    <li style="display: flex; align-items: center; gap: 0.5rem;">
+        {% if item.is_dir %}
+            📁 <a href="?path={{ item.path }}">{{ item.name }}</a>
+        {% else %}
+            📄 <a href="?path={{ item.path }}">{{ item.name }}</a>
+        {% endif %}
+        {% if item.errors_since_last_login %}
+            <span style="
+                background-color: #d9534f;
+                color: white;
+                border-radius: 12px;
+                padding: 0px 8px;
+                font-size: 0.8rem;
+                white-space: nowrap;
+            ">
+                Errors/Criticals since last login: {{ item.errors_since_last_login }}
+            </span>
+        {% endif %}
+    </li>
 {% endfor %}
 </ul>
 
