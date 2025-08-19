@@ -20,11 +20,11 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-        working-directory: ./django-admin-logs-viewer/documentation
+        working-directory: ./documentation
 
       - name: Build site
         run: npm run build
-        working-directory: ./django-admin-logs-viewer/documentation
+        working-directory: ./documentation
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
