@@ -114,6 +114,7 @@ def logs_viewer(request):
             content = f.read()
 
         column_names, column_types, all_rows = _parse_logs(content, parser_config)
+        all_rows.reverse()
 
         if search_query:
             filtered_rows = []
@@ -191,10 +192,13 @@ def _count_errors_in_rows(all_rows, column_types, request):
     except ValueError:
         return 0
 
-    for row in all_rows:
+    for row in reversed(all_rows): # Assumes logs are from oldest to newest
         row_time = datetime.fromisoformat(str(row[time_column_index]))
         if timezone.is_naive(row_time):
             row_time = log_tz.localize(row_time)
+
+        if row_time < prev_login:
+            break
 
         row_level = str(row[level_column_index]).lower()
         if row_time >= prev_login and row_level in ("error", "critical"):
