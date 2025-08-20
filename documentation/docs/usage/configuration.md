@@ -1,11 +1,15 @@
 ---
-sidebar_position: 2
+sidebar_position: 3
 hide_table_of_contents: false
 ---
 
 # Configuration
 
-In `settings.py`:
+:::warning
+For each step to work, complete all the previous ones.
+:::
+
+**In `settings.py`:**
 
 ### 1. Set path to your logs directories and/or logs files. Example:
 ```python
@@ -79,7 +83,7 @@ LOGS_PARSER = {
 *Result:*
 <img src={require('./imgs/img_5.png').default}/>
 
-### 4. Errors since last log in:
+### 4. Show errors since last log in:
 
 Both of these are required:
 ```python

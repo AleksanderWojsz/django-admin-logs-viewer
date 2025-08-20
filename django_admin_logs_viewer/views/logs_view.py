@@ -110,7 +110,7 @@ def logs_view(request):
         with open(current_path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
 
-        column_names, column_types, all_rows = _parse_logs(content, parser_config)
+        mode, column_names, column_types, all_rows = _parse_logs(content, parser_config)
 
         if all_rows:
             all_rows.reverse()
@@ -159,6 +159,7 @@ def logs_view(request):
             rows = None
 
         return render(request, "admin/logs_file.html", {
+            "mode": mode,
             "content": None if parser_config else content,
             "rows": rows,
             "column_names": column_names,

@@ -15,7 +15,7 @@
 {% endblock %}
 
 {% block content %}
-{% if column_names and column_types %}
+{% if mode.value == "rows_and_columns" and column_types %}
 <div style="display:flex; flex-direction: row; align-items: center; column-gap: 50px; margin-bottom: 1rem; margin-top: 1rem;">
 
     <form method="get" style="display:flex; gap: 0.5rem; align-items:center;">
@@ -37,7 +37,7 @@
         <button type="submit" class="button">Search</button>
     </form>
 </div>
-{% elif rows %}
+{% elif mode.value == "rows_and_columns" or mode.value == "rows" %}
 <form method="get" style="margin-bottom:1rem;">
     <input type="hidden" name="path" value="{{ current_path }}">
     <input type="text" name="search_query" placeholder="Search" value="{{ search_query }}">
@@ -49,7 +49,7 @@
 </div>
 
 
-{% if rows and column_names %}
+{% if mode.value == "rows_and_columns" %}
     <table>
         <thead>
             <tr>
@@ -62,7 +62,7 @@
             {% for row in rows %}
                 <tr>
                     {% for value in row %}
-                        {% if forloop.counter == column_names|length and value %}
+                        {% if forloop.last and value %}
                             <td><button type="button" class="button" onclick="toggleTraceback(this)" id="show-traceback-button">Show Traceback</button></td>
                         {% else %}
                             <td>{{ value }}</td>
@@ -81,7 +81,7 @@
             {% endfor %}
         </tbody>
     </table>
-{% elif rows %}
+{% elif mode.value == "rows" %}
     <table>
         <tbody>
             {% for row in rows %}
@@ -91,7 +91,7 @@
             {% endfor %}
         </tbody>
     </table>
-{% else %}
+{% elif mode.value == "raw_content" %}
     <pre>{{ content }}</pre>
 {% endif %}
 

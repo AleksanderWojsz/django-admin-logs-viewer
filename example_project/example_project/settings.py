@@ -187,7 +187,7 @@ import os
 
 LOGS_DIRS = [
     os.path.join(BASE_DIR, "logs"),
-    os.path.join(BASE_DIR, "some_other_logs_directory/commands/logfile_commands.log"),
+    # os.path.join(BASE_DIR, "logs"),
 ]
 
 LOGS_SEPARATORS = [

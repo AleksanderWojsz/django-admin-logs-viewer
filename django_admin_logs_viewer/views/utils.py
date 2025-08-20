@@ -49,13 +49,13 @@ def _count_errors_in_dir(path, request):
     total_errors = 0
     parser_config = app_settings.LOGS_PARSER
 
-    if not app_settings.SHOW_ERRORS_SINCE_LAST_LOG_IN or not parser_config or not parser_config["column_names"] and not app_settings.LOGS_SEPARATORS:
+    if not app_settings.SHOW_ERRORS_SINCE_LAST_LOG_IN or not parser_config or not parser_config.get("column_names") or not app_settings.LOGS_SEPARATORS:
         return 0
 
     if os.path.isfile(path):
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
-        column_names, column_types, all_rows = _parse_logs(content, parser_config)
+        mode ,column_names, column_types, all_rows = _parse_logs(content, parser_config)
         total_errors += _count_errors_in_rows(all_rows, column_types, request)
 
     elif os.path.isdir(path):
@@ -64,7 +64,7 @@ def _count_errors_in_dir(path, request):
                 file_path = os.path.join(root, filename)
                 with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
-                column_names, column_types, all_rows = _parse_logs(content, parser_config)
+                mode, column_names, column_types, all_rows = _parse_logs(content, parser_config)
                 total_errors += _count_errors_in_rows(all_rows, column_types, request)
 
     return total_errors

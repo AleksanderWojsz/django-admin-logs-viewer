@@ -1,19 +1,25 @@
 import json
 import re
+from enum import Enum
 from django_admin_logs_viewer.conf import app_settings
 
-def _parse_logs(content, parser_config):
-    # No parser and no separators -> splitlines
-    if not parser_config and not app_settings.LOGS_SEPARATORS:
-        return None, None, None
+class ParseMode(Enum):
+    RAW_CONTENT = "raw_content"
+    ROWS = "rows"
+    ROWS_AND_COLUMNS = "rows_and_columns"
 
-    # Only separators -> single column
+def _parse_logs(content, parser_config):
+   # No separators, no parser -> show raw file
+    if not parser_config and not app_settings.LOGS_SEPARATORS:
+        return ParseMode.RAW_CONTENT, None, None, None
+
+   # Separators, no parser -> list of rows (single column)
     if not parser_config and app_settings.LOGS_SEPARATORS:
         records = _split_log_records(content, app_settings.LOGS_SEPARATORS)
-        return None, None, [[r] for r in records]
+        return ParseMode.ROWS, None, None, [[r] for r in records]
 
     parser_type = parser_config["type"]
-    column_names = list(parser_config.get("column_names", [])) # List, so copy it made
+    column_names = list(parser_config.get("column_names", [])) # copy
     column_types = parser_config.get("column_types", [])
     separators = app_settings.LOGS_SEPARATORS
 
@@ -30,7 +36,7 @@ def _parse_logs(content, parser_config):
                 main_line = main_line.replace("\\", "\\\\") # So `\` is parsed correctly
                 obj = json.loads(main_line)
                 if not column_names:
-                        column_names = list(obj.keys())
+                    column_names = list(obj.keys())
                 values = list(obj.values())
             else: # parser_type == "regex":
                 match = re.fullmatch(parser_config["pattern"], main_line)
@@ -48,9 +54,9 @@ def _parse_logs(content, parser_config):
         except Exception as e:
             rows.append([f"Parse error: {e}", record])
 
-    column_names += ["Traceback"]
-
-    return column_names, column_types, rows
+    if column_names:
+        column_names += ["Traceback"]
+    return ParseMode.ROWS_AND_COLUMNS, column_names, column_types, rows
 
 def _split_log_records(content, separators):
     separator_pattern = re.compile("|".join(separators), re.MULTILINE)
