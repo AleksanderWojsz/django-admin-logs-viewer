@@ -9,7 +9,7 @@ dependencies=[
     "Django>=5.2",
     "pytz>=2020.0",
 ]
-description = "Viewer for Django admin logs"
+description = "A Django admin extension for displaying log files directly from the admin panel."
 readme = "README.md"
 requires-python = ">= 3.10"
 authors = [
