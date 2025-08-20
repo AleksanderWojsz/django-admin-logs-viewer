@@ -75,6 +75,9 @@ def _build_breadcrumbs(current_path, log_dirs):
         'url': reverse('logs_view')
     }]
 
+    current_path = os.path.normpath(current_path)
+    log_dirs = [os.path.normpath(d) for d in log_dirs]
+
     for log_dir in log_dirs:
         if current_path.startswith(log_dir):
             relative_parts = os.path.relpath(current_path, log_dir).split(os.sep)

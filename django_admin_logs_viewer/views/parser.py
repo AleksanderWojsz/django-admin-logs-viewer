@@ -10,7 +10,7 @@ def _parse_logs(content, parser_config):
     # Only separators -> single column
     if not parser_config and app_settings.LOGS_SEPARATORS:
         records = _split_log_records(content, app_settings.LOGS_SEPARATORS)
-        return None, None, records
+        return None, None, [[r] for r in records]
 
     parser_type = parser_config["type"]
     column_names = list(parser_config.get("column_names", [])) # List, so copy it made

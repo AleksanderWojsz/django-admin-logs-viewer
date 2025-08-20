@@ -16,6 +16,8 @@ A Django admin extension for displaying log files directly from the admin panel.
   - Or no parsing at all
 - Server-side filtering
 - ${\color{red}C}{\color{orange}o}{\color{yellow}l}{\color{green}o}{\color{blue}r}{\color{purple}f}{\color{pink}u}{\color{teal}l}$ logs!
+- Dark theme support
+- Saves you clicks by automatically going down if directory contains only one subdirectory and no files.
 
 ## 3. Demo:
 

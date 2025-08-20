@@ -37,7 +37,7 @@
         <button type="submit" class="button">Search</button>
     </form>
 </div>
-{% elif column_names and not parser_config %}
+{% elif rows %}
 <form method="get" style="margin-bottom:1rem;">
     <input type="hidden" name="path" value="{{ current_path }}">
     <input type="text" name="search_query" placeholder="Search" value="{{ search_query }}">
@@ -86,7 +86,7 @@
         <tbody>
             {% for row in rows %}
                 <tr>
-                    <td>{{ row }}</td>
+                    <td>{{ row.0 }}</td>
                 </tr>
             {% endfor %}
         </tbody>
