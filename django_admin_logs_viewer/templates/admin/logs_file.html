@@ -15,6 +15,7 @@
 {% endblock %}
 
 {% block content %}
+{% if column_names and column_types %}
 <div style="display:flex; flex-direction: row; align-items: center; column-gap: 50px; margin-bottom: 1rem; margin-top: 1rem;">
 
     <form method="get" style="display:flex; gap: 0.5rem; align-items:center;">
@@ -35,11 +36,20 @@
 
         <button type="submit" class="button">Search</button>
     </form>
-
+</div>
+{% elif column_names and not parser_config %}
+<form method="get" style="margin-bottom:1rem;">
+    <input type="hidden" name="path" value="{{ current_path }}">
+    <input type="text" name="search_query" placeholder="Search" value="{{ search_query }}">
+    <button type="submit" class="button">Search</button>
+</form>
+{% endif %}
+<div style="margin-top: 1rem; margin-bottom: 1rem">
     <a href="?path={{ current_path }}&download=1" class="button">Download file</a>
 </div>
 
-{% if rows %}
+
+{% if rows and column_names %}
     <table>
         <thead>
             <tr>
@@ -71,10 +81,21 @@
             {% endfor %}
         </tbody>
     </table>
+{% elif rows %}
+    <table>
+        <tbody>
+            {% for row in rows %}
+                <tr>
+                    <td>{{ row }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% else %}
     <pre>{{ content }}</pre>
 {% endif %}
 
+{% if page_obj %}
 <div class="pagination">
     {% if page_obj.has_previous %}
         <a href="?path={{ current_path }}&page=1{% if search_query %}&search_query={{ search_query }}{% endif %}{% if level_filter %}&level_filter={{ level_filter }}{% endif %}">Start</a>
@@ -88,6 +109,7 @@
         <a href="?path={{ current_path }}&page={{ page_obj.paginator.num_pages }}{% if search_query %}&search_query={{ search_query }}{% endif %}{% if level_filter %}&level_filter={{ level_filter }}{% endif %}">End</a>
     {% endif %}
 </div>
+{% endif %}
 
 <style>
 thead {
@@ -146,6 +168,9 @@ function toggleTraceback(button) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
+    if (!'{{ column_types|safe|escapejs }}') {
+        return;
+    }
     const theme = document.documentElement.getAttribute("data-theme");
     const levelColorsLight = {
         "debug": "#f0f0f0",
@@ -174,8 +199,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.querySelectorAll("table tbody tr").forEach(tr => {
         const cells = tr.querySelectorAll("td");
+        if (!cells[levelColumnIndex]) {
+            return;
+        }
         const text = cells[levelColumnIndex].innerText.trim().toLowerCase();
-        tr.style.backgroundColor = levelColors[text];
+        if (levelColors[text]) {
+            tr.style.backgroundColor = levelColors[text];
+        }
     });
 });
 </script>

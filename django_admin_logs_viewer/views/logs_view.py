@@ -111,7 +111,9 @@ def logs_view(request):
             content = f.read()
 
         column_names, column_types, all_rows = _parse_logs(content, parser_config)
-        all_rows.reverse()
+
+        if all_rows:
+            all_rows.reverse()
 
         if search_query:
             filtered_rows = []
@@ -148,9 +150,13 @@ def logs_view(request):
                     filtered_rows.append(row)
             all_rows = filtered_rows
 
-        paginator = Paginator(all_rows, rows_per_page)
-        page_obj = paginator.get_page(page_number)
-        rows = page_obj.object_list
+        if all_rows:
+            paginator = Paginator(all_rows, rows_per_page)
+            page_obj = paginator.get_page(page_number)
+            rows = page_obj.object_list
+        else:
+            page_obj = None
+            rows = None
 
         return render(request, "admin/logs_file.html", {
             "content": None if parser_config else content,

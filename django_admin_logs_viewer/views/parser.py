@@ -3,6 +3,15 @@ import re
 from django_admin_logs_viewer.conf import app_settings
 
 def _parse_logs(content, parser_config):
+    # No parser and no separators -> splitlines
+    if not parser_config and not app_settings.LOGS_SEPARATORS:
+        return None, None, None
+
+    # Only separators -> single column
+    if not parser_config and app_settings.LOGS_SEPARATORS:
+        records = _split_log_records(content, app_settings.LOGS_SEPARATORS)
+        return None, None, records
+
     parser_type = parser_config["type"]
     column_names = list(parser_config.get("column_names", [])) # List, so copy it made
     column_types = parser_config.get("column_types", [])
