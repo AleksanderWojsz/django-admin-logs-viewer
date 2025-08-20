@@ -2,15 +2,11 @@
 
 A Django admin extension for displaying log files directly from the admin panel.  
 
----
-
-## Documentation
+## 1. Documentation
 - [Usage Guide](https://aleksanderwojsz.github.io/django-admin-logs-viewer/docs/intro)  
 - [Contributing](https://aleksanderwojsz.github.io/django-admin-logs-viewer/docs/intro/)
 
----
-
-## Features
+## 2. Features
 - Supports multiple and nested log directories
 - Shows errors since last login
 - Multiple parsing options:
@@ -21,9 +17,7 @@ A Django admin extension for displaying log files directly from the admin panel.
 - Server-side filtering
 - Colorful logs!
 
----
-
-## Demo:
+## 3. Demo:
 
 https://github.com/user-attachments/assets/45ae361d-a8e6-4943-b6ee-1895efa2185d
 
