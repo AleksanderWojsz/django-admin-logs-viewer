@@ -4,7 +4,13 @@ hide_table_of_contents: false
 
 # Contributions
 
-### 1. Setup documentation locally
+### 1. Clone the repository
+```bash
+git clone https://github.com/AleksanderWojsz/django-admin-logs-viewer
+cd django-admin-logs-viewer
+```
+
+### 2. Setup documentation locally
 
 ```bash
 cd documentation
@@ -28,14 +34,14 @@ Deployment of the documentation is done automatically with every push on main.
 Automatic creation and upload of new PyPI package can be run from GitHub actions.
 :::
 
-### 2. Setup Python environment
+### 3. Setup Python environment
 
 ```bash
 pip install -r requirements.txt
 pip install -e . # To automatically use locally developed django-admin-logs-viewer package
 ```
 
-### 3. Create Django admin user and run example project
+### 4. Create Django admin user and run example project
 
 `example_project` is available for testing. To set it up, do:
 
