@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-admin-logs-viewer"
-version = "0.3.1"
+version = "0.4.0"
 dependencies=[
     "Django>=5.2",
     "pytz>=2020.0",
