@@ -187,13 +187,10 @@ import os
 
 LOGS_DIRS = [
     os.path.join(BASE_DIR, "logs"),
-    # os.path.join(BASE_DIR, "logs"),
 ]
 
-LOGS_SEPARATORS = [
-    r'^\{',
-]
-LOGS_ROWS_PER_PAGE = 50
+LOGS_SEPARATOR = r'^\{' # This one matches line starting with `{`
+# LOGS_ROWS_PER_PAGE = 50
 
 # LOGS_PARSER = {
 #     "type": "separator",
@@ -202,18 +199,18 @@ LOGS_ROWS_PER_PAGE = 50
 #     "column_types": ["LEVEL", "TIME", "OTHER", "OTHER", "OTHER"],
 # }
 
-# LOGS_PARSER = {
-#     "type": "json",
-#     "column_names": ["Level", "Time", "Path", "File & Line No ", "Message"],
-#     "column_types": ["LEVEL", "TIME", "OTHER", "OTHER", "OTHER"],
-# }
-
 LOGS_PARSER = {
-    "type": "regex",
-    "pattern": r'\{\s*"level"\s*:\s*"([^"]+)"\s*,\s*"datetime"\s*:\s*"([^"]+)"\s*,\s*"source"\s*:\s*"([^"]+)"\s*,\s*"file"\s*:\s*"([^"]+)"\s*,\s*"message"\s*:\s*"([^"]+)"\s*\}',
+    "type": "json",
     "column_names": ["Level", "Time", "Path", "File & Line No ", "Message"],
     "column_types": ["LEVEL", "TIME", "OTHER", "OTHER", "OTHER"],
 }
 
-SHOW_ERRORS_SINCE_LAST_LOG_IN = True
-LOGS_TIMEZONE = "Europe/Warsaw"
+# LOGS_PARSER = {
+#     "type": "regex",
+#     "pattern": r'\{\s*"level"\s*:\s*"([^"]+)"\s*,\s*"datetime"\s*:\s*"([^"]+)"\s*,\s*"source"\s*:\s*"([^"]+)"\s*,\s*"file"\s*:\s*"([^"]+)"\s*,\s*"message"\s*:\s*"([^"]+)"\s*\}',
+#     "column_names": ["Level", "Time", "Path", "File & Line No ", "Message"],
+#     "column_types": ["LEVEL", "TIME", "OTHER", "OTHER", "OTHER"],
+# }
+
+# SHOW_ERRORS_SINCE_LAST_LOG_IN = True
+# LOGS_TIMEZONE = "Europe/Warsaw"

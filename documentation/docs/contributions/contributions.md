@@ -24,18 +24,18 @@ npm start
 The documentation will be available at [http://localhost:3000/django-admin-logs-viewer/](http://localhost:3000/django-admin-logs-viewer/).
 
 :::note
-Deployment of the documentation is done automatically with every push on main.
+Deployment of the documentation is done automatically with every push on main.  
 Automatic creation and upload of new PyPI package can be run from GitHub actions.
 :::
 
-## 2. Setup Python environment
+### 2. Setup Python environment
 
 ```bash
 pip install -r requirements.txt
 pip install -e . # To automatically use locally developed django-admin-logs-viewer package
 ```
 
-## 3. Create Django admin user and run example project
+### 3. Create Django admin user and run example project
 
 `example_project` is available for testing. To set it up, do:
 

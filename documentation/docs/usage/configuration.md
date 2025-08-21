@@ -27,13 +27,11 @@ LOGS_DIRS = [
 - Not parsed file is displayed:
 <img src={require('./imgs/img_2.png').default}/>
 
-### 2. Set logs separator using regex:
+### 2. Set logs (rows) separator using regex:
 
 ```python
-LOGS_SEPARATORS = [
-    r'^\{', # (This one matches line starting with `{`)
-    # More can be added. If any matches, line will be split.
-]
+LOGS_SEPARATOR = r'(\r\n|\r|\n)' # This one separates by newlines (although it won't work properly with multiline traceback)
+# LOGS_SEPARATOR = r'^\{' # This one matches lines starting with `{` and works with multiline traceback
 
 LOGS_ROWS_PER_PAGE = 50 # Optional. Default: 100
 ```
@@ -77,7 +75,7 @@ LOGS_PARSER = {
 
 :::note
 `column_names` are optional.  
-`column_types` allows for level and time filtering and colors. Keywords are `"LEVEL"`, `"TIME"`.
+`column_types` allows for level and time filtering and colors. Keywords are `"LEVEL"`, `"TIME"` (in ISO 8601 format).
 :::
 
 *Result:*

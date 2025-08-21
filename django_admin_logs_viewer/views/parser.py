@@ -10,18 +10,18 @@ class ParseMode(Enum):
 
 def _parse_logs(content, parser_config):
    # No separators, no parser -> show raw file
-    if not parser_config and not app_settings.LOGS_SEPARATORS:
+    if not parser_config and not app_settings.LOGS_SEPARATOR:
         return ParseMode.RAW_CONTENT, None, None, None
 
    # Separators, no parser -> list of rows (single column)
-    if not parser_config and app_settings.LOGS_SEPARATORS:
-        records = _split_log_records(content, app_settings.LOGS_SEPARATORS)
+    if not parser_config and app_settings.LOGS_SEPARATOR:
+        records = _split_log_records(content, app_settings.LOGS_SEPARATOR)
         return ParseMode.ROWS, None, None, [[r] for r in records]
 
     parser_type = parser_config["type"]
     column_names = list(parser_config.get("column_names", [])) # copy
     column_types = parser_config.get("column_types", [])
-    separators = app_settings.LOGS_SEPARATORS
+    separators = app_settings.LOGS_SEPARATOR
 
     records = _split_log_records(content, separators)
     rows = []
@@ -58,19 +58,20 @@ def _parse_logs(content, parser_config):
         column_names += ["Traceback"]
     return ParseMode.ROWS_AND_COLUMNS, column_names, column_types, rows
 
-def _split_log_records(content, separators):
-    separator_pattern = re.compile("|".join(separators), re.MULTILINE)
+def _split_log_records(content, separator_pattern):
+    regex = re.compile(separator_pattern, re.MULTILINE)
 
     records = []
-    current_record = [] # Can be multiline
-    for line in content.splitlines():
-        if separator_pattern.match(line) and current_record:
-            records.append("\n".join(current_record))
-            current_record = [line]
-        else:
-            current_record.append(line)
+    last_index = 0
 
-    if current_record:
-        records.append("\n".join(current_record))
+    for match in regex.finditer(content):
+        start = match.start()
+        if last_index < start:
+            records.append(content[last_index:start])
+        last_index = start
 
-    return records
+    # Leftover
+    if last_index < len(content):
+        records.append(content[last_index:])
+
+    return [r.strip("\n") for r in records if r.strip()]

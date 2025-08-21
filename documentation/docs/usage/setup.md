@@ -5,20 +5,18 @@ hide_table_of_contents: true
 
 # Setup
 
-#### 1. Install package
+### 1. Install package
 ```python
 pip install django-admin-logs-viewer
 ```
 
-#### 2. In `settings.py`:
+### 2. In `settings.py`:
 ```python
 INSTALLED_APPS = [
-    'django_admin_logs_viewer', # At this line at the top
-    'django.contrib.admin',
+    'django_admin_logs_viewer', # Add at the top
     ...
 ]
 ```
-
 
 ```python
 TEMPLATES = [
@@ -35,7 +33,18 @@ TEMPLATES = [
 ]
 ```
 
-#### 3. Example *LOGGING* configuration:
+### 3. In `urls.py` add:
+```python
+from django.urls import include
+
+urlpatterns = [
+    path('admin/logs/', include('django_admin_logs_viewer.urls')), # Add at the top
+    ...
+]
+
+```
+
+### 4. (Optional) Example *LOGGING* configuration:
 ```python
 LOGS_SAVE_PATH = BASE_DIR / 'logs'
 (LOGS_SAVE_PATH / 'commands').mkdir(parents=True, exist_ok=True)
@@ -94,7 +103,7 @@ LOGGING = {
 }
 ```
 
-#### 4. Example logs usage:
+### 5. Example logs usage:
 
 ```python
 import logging

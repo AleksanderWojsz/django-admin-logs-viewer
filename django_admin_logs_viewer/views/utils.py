@@ -49,7 +49,7 @@ def _count_errors_in_dir(path, request):
     total_errors = 0
     parser_config = app_settings.LOGS_PARSER
 
-    if not app_settings.SHOW_ERRORS_SINCE_LAST_LOG_IN or not parser_config or not parser_config.get("column_names") or not app_settings.LOGS_SEPARATORS:
+    if not app_settings.SHOW_ERRORS_SINCE_LAST_LOG_IN or not parser_config or not parser_config.get("column_names") or not app_settings.LOGS_SEPARATOR:
         return 0
 
     if os.path.isfile(path):
@@ -151,12 +151,10 @@ def _validate_settings():
                 if len(parser["column_names"]) != len(parser["column_types"]):
                     errors.append("LOGS_PARSER['column_names'] and LOGS_PARSER['column_types'] must have the same length.")
 
-    # --- LOGS_SEPARATORS ---
-    if app_settings.LOGS_SEPARATORS:
-        if not isinstance(app_settings.LOGS_SEPARATORS, list):
-            errors.append("LOGS_SEPARATORS must be a list of regex patterns.")
-        elif not all(isinstance(s, str) for s in app_settings.LOGS_SEPARATORS):
-            errors.append("LOGS_SEPARATORS must contain only strings (regex patterns).")
+    # --- LOGS_SEPARATOR ---
+    if app_settings.LOGS_SEPARATOR:
+        if not isinstance(app_settings.LOGS_SEPARATOR, str):
+            errors.append("LOGS_SEPARATOR must be a string (regex pattern).")
 
     # --- LOGS_ROWS_PER_PAGE ---
     if app_settings.LOGS_ROWS_PER_PAGE and app_settings.LOGS_ROWS_PER_PAGE <= 0:
