@@ -3,7 +3,7 @@ sidebar_position: 2
 hide_table_of_contents: true
 ---
 
-# Setup
+# Installation
 
 ### 1. Install package
 ```python

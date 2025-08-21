@@ -81,7 +81,7 @@ LOGS_PARSER = {
 *Result:*
 <img src={require('./imgs/img_5.png').default}/>
 
-### 4. Show errors since last log in:
+### 4. Show errors since last login:
 
 Both of these are required:
 ```python
