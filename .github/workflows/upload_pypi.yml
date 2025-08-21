@@ -22,11 +22,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine bump2version
+          pip install build twine bump-my-version
 
       - name: Bump version and commit changes
         run: |
-          bump2version patch
+          bump-my-version bump minor
           git push --follow-tags
 
       - name: Build the package
