@@ -24,7 +24,8 @@ npm start
 The documentation will be available at [http://localhost:3000/django-admin-logs-viewer/](http://localhost:3000/django-admin-logs-viewer/).
 
 :::note
-Deployment of the documentation and the PyPI package is automatic after merging changes into the `main` branch.
+Deployment of the documentation is done automatically with every push on main.
+Automatic creation and upload of new PyPI package can be run from GitHub actions.
 :::
 
 ## 2. Setup Python environment

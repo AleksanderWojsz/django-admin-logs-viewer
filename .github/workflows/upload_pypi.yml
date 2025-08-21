@@ -1,10 +1,17 @@
 name: Deploy Python Package to PyPI
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Select version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 jobs:
   deploy:
@@ -31,7 +38,7 @@ jobs:
 
       - name: Bump version and commit changes
         run: |
-          bump-my-version bump minor
+          bump-my-version bump ${{ github.event.inputs.bump_type }}
           git push --follow-tags
 
       - name: Build the package
