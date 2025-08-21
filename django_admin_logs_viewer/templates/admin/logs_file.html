@@ -16,10 +16,11 @@
 
 {% block content %}
 {% if mode.value == "rows_and_columns" and column_types %}
-<div style="display:flex; flex-direction: row; align-items: center; column-gap: 50px; margin-bottom: 1rem; margin-top: 1rem;">
+<form method="get" style="display:flex; gap: 1rem; align-items:flex-end;">
 
-    <form method="get" style="display:flex; gap: 0.5rem; align-items:center;">
-        <select name="level_filter" onchange="this.form.submit()">
+    <div style="display:flex; flex-direction:column;">
+        <label for="level_filter">Level</label>
+        <select id="level_filter" name="level_filter" onchange="this.form.submit()">
             <option value="">All Levels</option>
             <option value="debug" {% if level_filter == 'debug' %}selected{% endif %}>DEBUG</option>
             <option value="info" {% if level_filter == 'info' %}selected{% endif %}>INFO</option>
@@ -27,16 +28,30 @@
             <option value="error" {% if level_filter == 'error' %}selected{% endif %}>ERROR</option>
             <option value="critical" {% if level_filter == 'critical' %}selected{% endif %}>CRITICAL</option>
         </select>
+    </div>
 
-        <input type="datetime-local" name="time_from" value="{{ request.GET.time_from }}" onchange="this.form.submit()">
-        <input type="datetime-local" name="time_to" value="{{ request.GET.time_to }}" onchange="this.form.submit()">
+    <div style="display:flex; flex-direction:column;">
+        <label for="time_from">Datetime from</label>
+        <input id="time_from" type="datetime-local" name="time_from" value="{{ request.GET.time_from }}" onchange="this.form.submit()">
+    </div>
 
-        <input type="hidden" name="path" value="{{ current_path }}">
-        <input type="text" name="search_query" placeholder="Search" value="{{ search_query }}">
+    <div style="display:flex; flex-direction:column;">
+        <label for="time_to">Datetime to</label>
+        <input id="time_to" type="datetime-local" name="time_to" value="{{ request.GET.time_to }}" onchange="this.form.submit()">
+    </div>
 
+    <div style="display:flex; flex-direction:column;">
+        <label for="search_query">Search</label>
+        <input id="search_query" type="text" name="search_query" placeholder="Search" value="{{ search_query }}">
+    </div>
+
+    <div style="display:flex; flex-direction:column;">
+        <label>&nbsp;</label>
         <button type="submit" class="button">Search</button>
-    </form>
-</div>
+    </div>
+
+    <input type="hidden" name="path" value="{{ current_path }}">
+</form>
 {% elif mode.value == "rows_and_columns" or mode.value == "rows" %}
 <form method="get" style="margin-bottom:1rem;">
     <input type="hidden" name="path" value="{{ current_path }}">
@@ -152,6 +167,12 @@ button.button,
     padding: 4px 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
+}
+
+label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 1px;
 }
 </style>
 
