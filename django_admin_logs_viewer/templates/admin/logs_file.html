@@ -52,7 +52,7 @@
 
     <input type="hidden" name="path" value="{{ current_path }}">
 </form>
-{% elif mode.value == "rows_and_columns" or mode.value == "rows" %}
+{% elif mode.value == "rows_and_columns" %}
 <form method="get" style="margin-bottom:1rem;">
     <input type="hidden" name="path" value="{{ current_path }}">
     <input type="text" name="search_query" placeholder="Search" value="{{ search_query }}">
@@ -84,25 +84,15 @@
                         {% endif %}
                     {% endfor %}
                 </tr>
-                {% if row|length == column_names|length and row|last %}
-                <tr class="traceback-row">
-                    <td colspan="{{ column_names|length }}" style="padding: 5px; border: none;">
-                        <div class="traceback-wrapper" style="max-height: 0; overflow: hidden; transition: max-height 0.2s;">
-                            <pre>{{ row|last }}</pre>
-                        </div>
-                    </td>
-                </tr>
+                {% if row|last %}
+                    <tr class="traceback-row">
+                        <td colspan="{{ column_names|length }}" style="padding: 5px; border: none;">
+                            <div class="traceback-wrapper" style="max-height: 0; overflow: hidden; transition: max-height 0.2s;">
+                                <pre>{{ row|last }}</pre>
+                            </div>
+                        </td>
+                    </tr>
                 {% endif %}
-            {% endfor %}
-        </tbody>
-    </table>
-{% elif mode.value == "rows" %}
-    <table>
-        <tbody>
-            {% for row in rows %}
-                <tr>
-                    <td>{{ row.0 }}</td>
-                </tr>
             {% endfor %}
         </tbody>
     </table>

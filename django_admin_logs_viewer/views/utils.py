@@ -47,24 +47,43 @@ def _count_errors_in_rows(all_rows, column_types, request):
 
 def _count_errors_in_dir(path, request):
     total_errors = 0
-    parser_config = app_settings.LOGS_PARSER
 
-    if not app_settings.SHOW_ERRORS_SINCE_LAST_LOG_IN or not parser_config or not parser_config.get("column_names") or not app_settings.LOGS_SEPARATOR:
+    if not getattr(app_settings, "SHOW_ERRORS_SINCE_LAST_LOG_IN", False):
         return 0
 
     if os.path.isfile(path):
+        # Find parser for this file
+        parser_name = None
+        for entry in app_settings.LOGS_DIRS:
+            if path.startswith(os.path.abspath(entry["path"])):
+                parser_name = entry.get("parser")
+                break
+
+        if not parser_name:
+            return 0
+
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
-        mode ,column_names, column_types, all_rows = _parse_logs(content, parser_config)
+        mode, column_names, column_types, all_rows = _parse_logs(content, parser_name)
         total_errors += _count_errors_in_rows(all_rows, column_types, request)
 
     elif os.path.isdir(path):
         for root, dirs, files in os.walk(path):
             for filename in files:
                 file_path = os.path.join(root, filename)
+                # Find parser for this file
+                parser_name = None
+                for entry in app_settings.LOGS_DIRS:
+                    if file_path.startswith(os.path.abspath(entry["path"])):
+                        parser_name = entry.get("parser")
+                        break
+
+                if not parser_name:
+                    continue
+
                 with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
-                mode, column_names, column_types, all_rows = _parse_logs(content, parser_config)
+                mode, column_names, column_types, all_rows = _parse_logs(content, parser_name)
                 total_errors += _count_errors_in_rows(all_rows, column_types, request)
 
     return total_errors
@@ -76,7 +95,7 @@ def _build_breadcrumbs(current_path, log_dirs):
     }]
 
     current_path = os.path.normpath(current_path)
-    log_dirs = [os.path.normpath(d) for d in log_dirs]
+    log_dirs = [os.path.normpath(d["path"]) for d in log_dirs]
 
     for log_dir in log_dirs:
         if current_path.startswith(log_dir):
@@ -115,8 +134,8 @@ def _auto_drill_down(path):
 def _is_inside_logs_dirs(path):
     path = os.path.abspath(path)
     for log_dir in app_settings.LOGS_DIRS:
-        log_dir = os.path.abspath(log_dir)
-        if os.path.commonpath([path, log_dir]) == log_dir:
+        allowed_path = os.path.abspath(log_dir["path"])
+        if os.path.commonpath([path, allowed_path]) == allowed_path:
             return True
     return False
 
@@ -128,36 +147,23 @@ def _validate_settings():
         errors.append("LOGS_DIRS must be a non-empty list of paths.")
     else:
         for d in app_settings.LOGS_DIRS:
-            if not os.path.exists(d):
-                errors.append(f"Log directory does not exist: {d}")
+            if not os.path.exists(d["path"]):
+                errors.append(f"Log directory does not exist: {d['path']}")
 
-    # --- LOGS_PARSER ---
-    if app_settings.LOGS_PARSER:
-        if not isinstance(app_settings.LOGS_PARSER, dict):
-            errors.append("LOGS_PARSER must be defined as a dictionary.")
+    # --- LOGS_PARSERS ---
+    if getattr(app_settings, "LOGS_PARSERS", None):
+        if not isinstance(app_settings.LOGS_PARSERS, dict):
+            errors.append("LOGS_PARSERS must be defined as a dictionary.")
         else:
-            parser = app_settings.LOGS_PARSER
-            if "type" not in parser:
-                errors.append("LOGS_PARSER must define 'type'.")
-            elif parser["type"] not in ("separator", "json", "regex"):
-                errors.append("LOGS_PARSER['type'] must be one of: separator, json, regex.")
-
-            if parser.get("type") == "separator" and "separator" not in parser:
-                errors.append("LOGS_PARSER['separator'] is required for type 'separator'.")
-            if parser.get("type") == "regex" and "pattern" not in parser:
-                errors.append("LOGS_PARSER['pattern'] is required for type 'regex'.")
-
-            if "column_names" in parser and "column_types" in parser:
-                if len(parser["column_names"]) != len(parser["column_types"]):
-                    errors.append("LOGS_PARSER['column_names'] and LOGS_PARSER['column_types'] must have the same length.")
-
-    # --- LOGS_SEPARATOR ---
-    if app_settings.LOGS_SEPARATOR:
-        if not isinstance(app_settings.LOGS_SEPARATOR, str):
-            errors.append("LOGS_SEPARATOR must be a string (regex pattern).")
+            for parser_name, parser in app_settings.LOGS_PARSERS.items():
+                if "pattern" not in parser:
+                    errors.append(f"LOGS_PARSERS['{parser_name}'] must define 'pattern'.")
+                if "column_names" in parser and "column_types" in parser:
+                    if len(parser["column_names"]) != len(parser["column_types"]):
+                        errors.append(f"LOGS_PARSERS['{parser_name}'] column_names and column_types must have the same length.")
 
     # --- LOGS_ROWS_PER_PAGE ---
-    if app_settings.LOGS_ROWS_PER_PAGE and app_settings.LOGS_ROWS_PER_PAGE <= 0:
+    if getattr(app_settings, "LOGS_ROWS_PER_PAGE", None) and app_settings.LOGS_ROWS_PER_PAGE <= 0:
         errors.append("LOGS_ROWS_PER_PAGE should be > 0")
 
     return errors

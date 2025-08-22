@@ -1,77 +1,61 @@
-import json
 import re
 from enum import Enum
 from django_admin_logs_viewer.conf import app_settings
 
+class LOGS_PREDEFINED_REGEXES:
+    # JSON style log: {"level":"INFO","time":"2025-08-22T12:34:56","path":"/app","file":"app.py","message":"Something happened"}
+    json = r'^\{\s*"level"\s*:\s*"([^"]+)"\s*,\s*"datetime"\s*:\s*"([^"]+)"\s*,\s*"source"\s*:\s*"([^"]+)"\s*,\s*"file"\s*:\s*"([^"]+)"\s*,\s*"message"\s*:\s*"([^"]+)"\s*\}$'
+
+    # Comma-separated: Level,Time,Path,File,Message
+    comma_separated = r'^(.*?),(.*?),(.*?),(.*?),(.*)$'
+
+    # Space-separated simple log: [LEVEL] 2025-08-22T12:34:56 Message
+    simple_space = r'^\[(\w+)\]\s+(\S+)\s+(.*)$'
+
+    # Syslog format: Aug 22 12:34:56 hostname program[pid]: message
+    syslog = r'^(\w+\s+\d+\s+\d+:\d+:\d+)\s+(\S+)\s+(\S+)\[(\d+)\]:\s+(.*)$'
+
 class ParseMode(Enum):
     RAW_CONTENT = "raw_content"
-    ROWS = "rows"
     ROWS_AND_COLUMNS = "rows_and_columns"
 
-def _parse_logs(content, parser_config):
-   # No separators, no parser -> show raw file
-    if not parser_config and not app_settings.LOGS_SEPARATOR:
+def _get_parser_config(name):
+    user_parsers = getattr(app_settings, "LOGS_PARSERS", {})
+    if name in user_parsers:
+        return user_parsers[name]
+    raise ValueError(f"Parser '{name}' not found in LOGS_PARSERS.")
+
+def _parse_logs(content, parser_name):
+    if not parser_name:
         return ParseMode.RAW_CONTENT, None, None, None
 
-   # Separators, no parser -> list of rows (single column)
-    if not parser_config and app_settings.LOGS_SEPARATOR:
-        records = _split_log_records(content, app_settings.LOGS_SEPARATOR)
-        return ParseMode.ROWS, None, None, [[r] for r in records]
-
-    parser_type = parser_config["type"]
+    parser_config = _get_parser_config(parser_name)
     column_names = list(parser_config.get("column_names", [])) # copy
     column_types = parser_config.get("column_types", [])
-    separators = app_settings.LOGS_SEPARATOR
+    pattern = parser_config["pattern"]
 
-    records = _split_log_records(content, separators)
+    regex = re.compile(pattern)
     rows = []
+    current_row = None
 
-    for record in records:
-        try:
-            main_line, *traceback_text = record.split("\n", maxsplit=1)
-
-            if parser_type == "separator":
-                values = main_line.split(parser_config["separator"])
-            elif parser_type == "json":
-                main_line = main_line.replace("\\", "\\\\") # So `\` is parsed correctly
-                obj = json.loads(main_line)
-                if not column_names:
-                    column_names = list(obj.keys())
-                values = list(obj.values())
-            else: # parser_type == "regex":
-                match = re.fullmatch(parser_config["pattern"], main_line)
-                if not match:
-                    raise ValueError(f"Regex did not match line: {main_line}")
-                values = list(match.groups())
-
-            if traceback_text:
-                values.append(traceback_text[0])
+    for line in content.splitlines():
+        match = regex.match(line)
+        if match:
+            if current_row:
+                rows.append(current_row)
+            values = list(match.groups())
+            values.append("") # Traceback
+            current_row = values
+        else:
+            if current_row:
+                current_row[-1] += ("\n" if current_row[-1] else "") + line
             else:
-                values.append("")
+                rows.append([f"Unmatched line: {line}"])
 
-            rows.append(values)
-
-        except Exception as e:
-            rows.append([f"Parse error: {e}", record])
+    if current_row:
+        rows.append(current_row)
 
     if column_names:
         column_names += ["Traceback"]
+
     return ParseMode.ROWS_AND_COLUMNS, column_names, column_types, rows
-
-def _split_log_records(content, separator_pattern):
-    regex = re.compile(separator_pattern, re.MULTILINE)
-
-    records = []
-    last_index = 0
-
-    for match in regex.finditer(content):
-        start = match.start()
-        if last_index < start:
-            records.append(content[last_index:start])
-        last_index = start
-
-    # Leftover
-    if last_index < len(content):
-        records.append(content[last_index:])
-
-    return [r.strip("\n") for r in records if r.strip()]

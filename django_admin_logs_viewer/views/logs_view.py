@@ -13,6 +13,8 @@ from .parser import _parse_logs
 
 @staff_member_required
 def logs_view(request):
+
+    # Show errors if any
     errors = _validate_settings()
     if errors:
         for e in errors:
@@ -25,6 +27,7 @@ def logs_view(request):
     log_dirs = app_settings.LOGS_DIRS
     current_path = request.GET.get("path", "")
 
+    # Check if path exists and is allowed
     if current_path:
         current_path = os.path.abspath(current_path)
         if not _is_inside_logs_dirs(current_path):
@@ -33,14 +36,16 @@ def logs_view(request):
                 "breadcrumbs": [{"name": "Logs error", "url": ""}],
             })
 
+    # Handle downloads
     if request.GET.get("download"):
         if not current_path: # Starting directory (one with listed log_dirs)
             tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
             with tempfile.TemporaryDirectory() as tmpdir:
                 for i, log_dir in enumerate(log_dirs):
-                    if os.path.exists(log_dir):
-                        dst = os.path.join(tmpdir, f"{os.path.basename(log_dir)}_{i}")
-                        shutil.copytree(log_dir, dst)
+                    path = log_dir["path"]
+                    if os.path.exists(path):
+                        dst = os.path.join(tmpdir, f"{os.path.basename(path)}_{i}")
+                        shutil.copytree(path, dst)
                 shutil.make_archive(tmp.name, "zip", tmpdir)
             return FileResponse(open(tmp.name + ".zip", "rb"), as_attachment=True, filename="all_logs.zip")
         elif os.path.isdir(current_path):
@@ -50,16 +55,19 @@ def logs_view(request):
         elif os.path.isfile(current_path):
             return FileResponse(open(current_path, "rb"), as_attachment=True, filename=os.path.basename(current_path))
 
+    ###### Handle path changes ######
+
     # Just entered logs view
     if not current_path:
         items = []
         for log_dir in log_dirs:
-            is_dir = os.path.isdir(log_dir)
-            errors_count = _count_errors_in_dir(log_dir, request)
+            path = log_dir["path"]
+            is_dir = os.path.isdir(path)
+            errors_count = _count_errors_in_dir(path, request)
 
             items.append({
-                "name": os.path.basename(log_dir),
-                "path": log_dir,
+                "name": os.path.basename(path),
+                "path": path,
                 "is_dir": is_dir,
                 "errors_since_last_login": errors_count
             })
@@ -99,7 +107,6 @@ def logs_view(request):
         })
     # Handle files
     else:
-        parser_config = app_settings.LOGS_PARSER
         rows_per_page = app_settings.LOGS_ROWS_PER_PAGE
         page_number = int(request.GET.get("page", 1))
         search_query = request.GET.get("search_query", "").strip()
@@ -110,11 +117,19 @@ def logs_view(request):
         with open(current_path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
 
-        mode, column_names, column_types, all_rows = _parse_logs(content, parser_config)
+        # Find parser
+        parser_name = None
+        for entry in log_dirs:
+            if current_path.startswith(os.path.abspath(entry["path"])):
+                parser_name = entry.get("parser")
+                break
+
+        mode, column_names, column_types, all_rows = _parse_logs(content, parser_name)
 
         if all_rows:
-            all_rows.reverse()
+            all_rows.reverse() # So new ones are at the top
 
+        # Filter by search query
         if search_query:
             filtered_rows = []
             for row in all_rows:
@@ -122,7 +137,8 @@ def logs_view(request):
                     filtered_rows.append(row)
             all_rows = filtered_rows
 
-        if level_filter:
+        # Filter by level
+        if level_filter and column_types:
             level_column_index = list(map(lambda e: e.lower(), column_types)).index("level")
             if level_column_index >= 0:
                 filtered_rows = []
@@ -132,23 +148,25 @@ def logs_view(request):
                         filtered_rows.append(row)
                 all_rows = filtered_rows
 
+        # Filter by time
         if (time_from or time_to) and column_types:
             time_column_index = list(map(lambda e: e.lower(), column_types)).index("time")
-            filtered_rows = []
-            for row in all_rows:
-                row_time = datetime.fromisoformat(row[time_column_index])
-                include = True
-                if time_from:
-                    from_dt = datetime.fromisoformat(time_from)
-                    if row_time < from_dt:
-                        include = False
-                if time_to:
-                    to_dt = datetime.fromisoformat(time_to)
-                    if row_time > to_dt:
-                        include = False
-                if include:
-                    filtered_rows.append(row)
-            all_rows = filtered_rows
+            if time_column_index >= 0:
+                filtered_rows = []
+                for row in all_rows:
+                    row_time = datetime.fromisoformat(row[time_column_index])
+                    include = True
+                    if time_from:
+                        from_dt = datetime.fromisoformat(time_from)
+                        if row_time < from_dt:
+                            include = False
+                    if time_to:
+                        to_dt = datetime.fromisoformat(time_to)
+                        if row_time > to_dt:
+                            include = False
+                    if include:
+                        filtered_rows.append(row)
+                all_rows = filtered_rows
 
         if all_rows:
             paginator = Paginator(all_rows, rows_per_page)
@@ -160,7 +178,7 @@ def logs_view(request):
 
         return render(request, "admin/logs_file.html", {
             "mode": mode,
-            "content": None if parser_config else content,
+            "content": None if parser_name else content,
             "rows": rows,
             "column_names": column_names,
             "column_types": column_types,
