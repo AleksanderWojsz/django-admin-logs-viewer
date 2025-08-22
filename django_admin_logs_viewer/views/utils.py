@@ -5,8 +5,9 @@ from django.utils import timezone
 from django.urls import reverse
 from .parser import _parse_logs
 from django_admin_logs_viewer.conf import app_settings
+from django_admin_logs_viewer.defaults import DEFAULTS
 
-def _count_errors_in_rows(all_rows, column_types, request):
+def _count_errors_in_rows(all_rows, column_types, request, datetime_format=None):
     prev_login_str = request.session.get('previous_login')
 
     if not prev_login_str or not hasattr(app_settings, "LOGS_TIMEZONE"):
@@ -32,23 +33,28 @@ def _count_errors_in_rows(all_rows, column_types, request):
         return 0
 
     for row in reversed(all_rows): # Assumes logs are from oldest to newest
-        row_time = datetime.fromisoformat(str(row[time_column_index]))
-        if timezone.is_naive(row_time):
-            row_time = log_tz.localize(row_time)
+        try:
+            row_time_str = str(row[time_column_index])
+            row_time = datetime.strptime(row_time_str, datetime_format or DEFAULTS["datetime_format"])
 
-        if row_time < prev_login:
-            break
+            if timezone.is_naive(row_time):
+                row_time = log_tz.localize(row_time)
 
-        row_level = str(row[level_column_index]).lower()
-        if row_time >= prev_login and row_level in ("error", "critical"):
-            errors_count += 1
+            if row_time < prev_login:
+                break
+
+            row_level = str(row[level_column_index]).lower()
+            if row_time >= prev_login and row_level in ("error", "critical"):
+                errors_count += 1
+        except Exception: # E.g: Line is "unmatched", so parsing time will fail
+            pass
 
     return errors_count
 
 def _count_errors_in_dir(path, request):
     total_errors = 0
 
-    if not getattr(app_settings, "SHOW_ERRORS_SINCE_LAST_LOG_IN", False):
+    if not getattr(app_settings, "LOGS_SHOW_ERRORS_SINCE_LAST_LOG_IN", False):
         return 0
 
     if os.path.isfile(path):
@@ -64,7 +70,7 @@ def _count_errors_in_dir(path, request):
 
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
-        mode, column_names, column_types, all_rows = _parse_logs(content, parser_name)
+        mode, column_names, column_types, all_rows, _ = _parse_logs(content, parser_name)
         total_errors += _count_errors_in_rows(all_rows, column_types, request)
 
     elif os.path.isdir(path):
@@ -83,8 +89,8 @@ def _count_errors_in_dir(path, request):
 
                 with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
-                mode, column_names, column_types, all_rows = _parse_logs(content, parser_name)
-                total_errors += _count_errors_in_rows(all_rows, column_types, request)
+                mode, column_names, column_types, all_rows, datetime_format = _parse_logs(content, parser_name)
+                total_errors += _count_errors_in_rows(all_rows, column_types, request, datetime_format)
 
     return total_errors
 

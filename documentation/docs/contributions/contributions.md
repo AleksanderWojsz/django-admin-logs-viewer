@@ -27,10 +27,10 @@ To start a local development server:
 npm start
 ```
 
-The documentation will be available at [http://localhost:3000/django-admin-logs-viewer/](http://localhost:3000/django-admin-logs-viewer/).
+The documentation will be available at [http://localhost:3000/django-admin-logs-viewer/](http://localhost:3000/django-admin-logs-viewer/)
 
 :::note
-Deployment of the documentation is done automatically with every push on main.  
+Deployment of the documentation is done automatically with every push to the *main* branch.  
 Automatic creation and upload of new PyPI package can be run from GitHub actions.
 :::
 
@@ -69,4 +69,4 @@ Then run the development server:
 python manage.py runserver
 ```
 
-You can access the admin panel at [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin).
+You can access the admin panel at [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin)

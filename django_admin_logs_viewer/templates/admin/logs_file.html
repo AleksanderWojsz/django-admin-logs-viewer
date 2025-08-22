@@ -86,7 +86,7 @@
                 </tr>
                 {% if row|last %}
                     <tr class="traceback-row">
-                        <td colspan="{{ column_names|length }}" style="padding: 5px; border: none;">
+                        <td colspan="{{ row|length }}" style="padding: 5px; border: none;">
                             <div class="traceback-wrapper" style="max-height: 0; overflow: hidden; transition: max-height 0.2s;">
                                 <pre>{{ row|last }}</pre>
                             </div>

@@ -27,12 +27,13 @@ def _get_parser_config(name):
 
 def _parse_logs(content, parser_name):
     if not parser_name:
-        return ParseMode.RAW_CONTENT, None, None, None
+        return ParseMode.RAW_CONTENT, None, None, None, None
 
     parser_config = _get_parser_config(parser_name)
     column_names = list(parser_config.get("column_names", [])) # copy
     column_types = parser_config.get("column_types", [])
     pattern = parser_config["pattern"]
+    datetime_format = parser_config.get("datetime_format")
 
     regex = re.compile(pattern)
     rows = []
@@ -58,4 +59,4 @@ def _parse_logs(content, parser_name):
     if column_names:
         column_names += ["Traceback"]
 
-    return ParseMode.ROWS_AND_COLUMNS, column_names, column_types, rows
+    return ParseMode.ROWS_AND_COLUMNS, column_names, column_types, rows, datetime_format

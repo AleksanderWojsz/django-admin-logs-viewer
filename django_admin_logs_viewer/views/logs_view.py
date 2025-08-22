@@ -10,6 +10,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django_admin_logs_viewer.conf import app_settings
 from .utils import _count_errors_in_dir, _build_breadcrumbs, _auto_drill_down, _is_inside_logs_dirs, _validate_settings
 from .parser import _parse_logs
+from django_admin_logs_viewer.defaults import DEFAULTS
 
 @staff_member_required
 def logs_view(request):
@@ -124,7 +125,7 @@ def logs_view(request):
                 parser_name = entry.get("parser")
                 break
 
-        mode, column_names, column_types, all_rows = _parse_logs(content, parser_name)
+        mode, column_names, column_types, all_rows, datetime_format = _parse_logs(content, parser_name)
 
         if all_rows:
             all_rows.reverse() # So new ones are at the top
@@ -154,7 +155,10 @@ def logs_view(request):
             if time_column_index >= 0:
                 filtered_rows = []
                 for row in all_rows:
-                    row_time = datetime.fromisoformat(row[time_column_index])
+                    row_time_str = str(row[time_column_index])
+
+                    row_time = datetime.strptime(row_time_str, datetime_format or DEFAULTS["datetime_format"])
+
                     include = True
                     if time_from:
                         from_dt = datetime.fromisoformat(time_from)
