@@ -12,16 +12,14 @@ hide_table_of_contents: true
 - [Contributing](/docs/category/contributions)
 
 ## 2. Features
-- Supports multiple and nested log directories
+- Supports multiple nested logs directories
+- Parsing based on regex
+- Use of different parser for each directory
 - Shows errors since last login
-- Multiple parsing options:
-  - JSON
-  - Separator
-  - Regex
-  - Or no parsing at all
 - Server-side filtering
 - Dark theme support
 - Saves you clicks by automatically going down if directory contains only one subdirectory and no files.
+- colorful logs!
 
 ## 3. Demo:
 

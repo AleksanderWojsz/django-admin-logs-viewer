@@ -7,17 +7,14 @@ A Django admin extension for displaying log files directly from the admin panel.
 - [Contributing](https://aleksanderwojsz.github.io/django-admin-logs-viewer/docs/category/contributions)
 
 ## 2. Features
-- Supports multiple and nested log directories
+- Supports multiple nested logs directories
+- Parsing based on regex
+- Use of different parser for each directory
 - Shows errors since last login
-- Multiple parsing options:
-  - JSON
-  - Separator
-  - Regex
-  - Or no parsing at all
 - Server-side filtering
-- ${\color{red}C}{\color{orange}o}{\color{yellow}l}{\color{green}o}{\color{blue}r}{\color{purple}f}{\color{pink}u}{\color{teal}l}$ logs!
 - Dark theme support
 - Saves you clicks by automatically going down if directory contains only one subdirectory and no files.
+- ${\color{red}C}{\color{orange}o}{\color{yellow}l}{\color{green}o}{\color{blue}r}{\color{purple}f}{\color{pink}u}{\color{teal}l}$ logs!
 
 ## 3. Demo:
 
