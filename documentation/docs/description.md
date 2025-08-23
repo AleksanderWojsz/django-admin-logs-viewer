@@ -19,7 +19,7 @@ hide_table_of_contents: true
 - Server-side filtering
 - Dark theme support
 - Saves you clicks by automatically going down if directory contains only one subdirectory and no files.
-- colorful logs!
+- Colorful logs!
 
 ## 3. Demo:
 

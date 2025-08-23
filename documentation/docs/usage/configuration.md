@@ -58,9 +58,9 @@ LOGS_PARSERS = {
 ```
 
 :::note
-`column_names` are optional.  
-`column_types` are optional. They allow for level and time filtering and colors. Keywords are `"LEVEL"`, `"TIME"`.
-`datetime_format` is optional. Default: *%Y-%m-%d %H:%M:%S,%f* (E.g. *2025-08-20 19:21:45,588*).
+- `column_names` are optional.  
+- `column_types` are optional. They allow for level and time filtering and colors. Keywords are `"LEVEL"`, `"TIME"`.  
+- `datetime_format` is optional. Default: *%Y-%m-%d %H:%M:%S,%f* (E.g. *2025-08-20 19:21:45,588*).
 :::
 
 ---

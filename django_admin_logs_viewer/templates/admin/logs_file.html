@@ -77,7 +77,7 @@
             {% for row in rows %}
                 <tr>
                     {% for value in row %}
-                        {% if forloop.last and value %}
+                        {% if forloop.last and value and row|length != 1%}
                             <td><button type="button" class="button" onclick="toggleTraceback(this)" id="show-traceback-button">Show Traceback</button></td>
                         {% else %}
                             <td>{{ value }}</td>
